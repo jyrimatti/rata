@@ -59,16 +59,15 @@
             },
             "webpack": {
                 "modulePaths": [
-                    "node_modules/react-native-web-maps"
+                    "react-native-maps",
+                    "react-native-web-maps"
                 ],
                 "moduleAliases": {
-                    "react-native-maps": {
-                        "projectPath": "node_modules/react-native-web-maps"
-                    }
-                },
-                "npm": {
-                    "react-native-web-maps": "0.2.0"
+                    "react-native-maps": "react-native-web-maps"
                 }
+            },
+            "npm": {
+                "react-native-web-maps": "0.2.0"
             }
         },
         "react-native-screens": "source:rnv"

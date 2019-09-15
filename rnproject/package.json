@@ -1,7 +1,9 @@
 {
     "browser": {
         "child_process": false,
-        "fs": false
+        "fs": false,
+        "path": false,
+        "os": false
     },
     "name": "rnproject",
     "version": "0.1.0",
