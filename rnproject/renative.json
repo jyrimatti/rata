@@ -1,0 +1,141 @@
+{
+    "projectName": "rnproject",
+    "paths": {
+        "globalConfigDir": "~/.rnv",
+        "appConfigsDir": "./appConfigs",
+        "platformTemplatesDir": "RNV_HOME/platformTemplates",
+        "entryDir": "./",
+        "platformAssetsDir": "./platformAssets",
+        "platformBuildsDir": "./platformBuilds",
+        "projectConfigDir": "./projectConfig"
+    },
+    "defaults": {
+        "title": "Rata",
+        "id": "net.lahteenmaki.rata",
+        "supportedPlatforms": [
+            "ios",
+            "android",
+            "androidtv",
+            "androidwear",
+            "web",
+            "tizen",
+            "tizenmobile",
+            "tvos",
+            "webos",
+            "macos",
+            "windows",
+            "tizenwatch",
+            "kaios",
+            "firefoxos",
+            "firefoxtv"
+        ]
+    },
+    "templates": {
+        "renative-template-blank": {
+            "version": "0.27.0-alpha.5"
+        }
+    },
+    "currentTemplate": "renative-template-blank",
+    "plugins": {
+        "renative": "source:rnv",
+        "react": "source:rnv",
+        "react-art": "source:rnv",
+        "react-dom": "source:rnv",
+        "react-native": "source:rnv",
+        "react-native-web": "source:rnv",
+        "react-native-web-image-loader": "source:rnv",
+        "react-native-gesture-handler": "source:rnv",
+        "react-navigation": "source:rnv",
+        "react-navigation-tabs": "source:rnv",
+        "react-native-reanimated": "source:rnv",
+        "react-native-vector-icons": "source:rnv",
+        "react-native-maps": {
+            "version": "0.19.0",
+            "ios": {
+                "podName": "react-native-maps"
+            },
+            "tvos": {
+                "podName": "react-native-maps"
+            },
+            "webpack": {
+                "modulePaths": [
+                    "node_modules/react-native-web-maps"
+                ],
+                "moduleAliases": {
+                    "react-native-maps": {
+                        "projectPath": "node_modules/react-native-web-maps"
+                    }
+                },
+                "npm": {
+                    "react-native-web-maps": "0.2.0"
+                }
+            }
+        },
+        "react-native-screens": "source:rnv"
+    },
+    "permissions": {
+        "ios": {},
+        "android": {
+            "INTERNET": {
+                "key": "android.permission.INTERNET",
+                "security": "normal"
+            },
+            "SYSTEM_ALERT_WINDOW": {
+                "key": "android.permission.SYSTEM_ALERT_WINDOW",
+                "security": "signature"
+            }
+        }
+    },
+    "platforms": {
+        "android": {
+            "gradle.properties": {
+                "android.useDeprecatedNdk": true
+            },
+            "AndroidManifest": {
+                "children": [
+                    {
+                        "tag": "application",
+                        "android:name": ".MainApplication",
+                        "android:usesCleartextTraffic": true,
+                        "tools:targetApi": 28
+                    }
+                ]
+            }
+        },
+        "androidtv": {
+            "gradle.properties": {
+                "android.useDeprecatedNdk": true
+            },
+            "AndroidManifest": {
+                "children": [
+                    {
+                        "tag": "application",
+                        "android:name": ".MainApplication",
+                        "android:usesCleartextTraffic": true,
+                        "tools:targetApi": 28
+                    }
+                ]
+            }
+        },
+        "androidwear": {
+            "gradle.properties": {
+                "android.useDeprecatedNdk": true
+            },
+            "AndroidManifest": {
+                "children": [
+                    {
+                        "tag": "application",
+                        "android:name": ".MainApplication",
+                        "android:usesCleartextTraffic": true,
+                        "tools:targetApi": 28
+                    }
+                ]
+            }
+        },
+        "web": {
+            "webpackConfig": {
+                "customScripts": ["https://maps.googleapis.com/maps/api/js?key=AIzaSyAdZcPjDibD3Z_WtymQ3x-gSzfE1zfi7WY"]
+            }
+        }
+    }
+}

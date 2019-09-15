@@ -36,8 +36,8 @@ let
 
   ghcjsbase = if compiler == "ghcjs"
               then haskellPackages.ghcjs-base
-              #else haskellPackages.ghcjs-base-stub;
-              else haskellPackages.callPackage ghcjs-base-stub-forked {};
+              else haskellPackages.ghcjs-base-stub;
+              #else haskellPackages.callPackage ghcjs-base-stub-forked {};
 
   myproject = { mkDerivation, base, deepseq, ghcjs-base, react-hs, react-native-hs, stdenv, nodejs, z3,
         text, time, transformers, containers, network-uri, ghcjs-fetch, geojson, bytestring, generic-data
