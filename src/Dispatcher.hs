@@ -7,7 +7,7 @@ import React.Flux                     ( action
                                                 , EventModification
                                                 , simpleHandler
                                                 )
-import Store
+import Store (AppAction, AppState)
 
 dispatch :: AppAction -> [SomeStoreAction]
 dispatch a = [action @AppState a]

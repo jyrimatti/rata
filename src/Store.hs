@@ -4,8 +4,10 @@
 {-# LANGUAGE NoImplicitPrelude            #-}
 {-# LANGUAGE OverloadedStrings            #-}
 {-# LANGUAGE ScopedTypeVariables          #-}
+{-# LANGUAGE TypeApplications          #-}
 {-# LANGUAGE TupleSections                #-}
 {-# LANGUAGE TypeFamilies                 #-}
+{-# LANGUAGE LambdaCase                 #-}
 module Store where
 
 import           Control.DeepSeq
@@ -13,6 +15,7 @@ import           Control.Exception              ( catch )
 import qualified Data.Aeson                    as A
 import           Data.Foldable                  ( toList )
 import           Data.Geospatial
+import qualified Data.Text as T
 import           Data.JSString                  ( pack )
 import qualified Data.Map                      as Map
 import           Data.Sequence                 as Seq
@@ -22,6 +25,7 @@ import           GHCJS.Fetch
 import           Infra
 import           Layer
 import           LayerTypes
+import Maps.Types (Region(..))
 import           Numeric.Natural
 
 import           Prelude                        ( Show
@@ -32,41 +36,71 @@ import           Prelude                        ( Show
                                                 , return
                                                 , not
                                                 , show
+                                                , Either(..)
                                                 , (<>)
                                                 , concatMap
                                                 , (==)
                                                 , (&&)
                                                 )
-import           React.Flux                     ( StoreData(..) )
+import           React.Flux                     ( StoreData(..), action, SomeStoreAction )
+import           React.Flux.Ajax                ( jsonAjax, RequestTimeout(..) )
 import           React.Flux.Rn.APIs             ( log )
 
-hasVectorData (AppState _ layerData _) layer = not $ null $ layerData Map.! layer
+hasVectorData (AppState _ layerData _) layer = Map.member layer layerData
 
 data AppState = AppState {
     layerStates :: Map.Map Layer LayerState,
-    layerData :: Map.Map Layer (Seq GeoLine),
+    layerData :: Map.Map Layer [GeospatialGeometry],
     zoomLevel :: Natural
 } deriving (Show, Typeable, Eq)
 
 data AppAction = ChangeLayerState Layer
+               | VectorFetchFailed Layer
+               | VectorFetchSucceeded Layer (Seq (GeoFeature ())) 
+               | RegionChangeComplete Region
     deriving (Show, Typeable, Generic, NFData, Eq)
+
+featureGeometries (GeoFeature _ (Collection geom) _ _) = toList geom
+featureGeometries (GeoFeature _             geom  _ _) = [geom]
+
+disp :: AppAction -> [SomeStoreAction]
+disp a = [action @AppState a]
 
 instance StoreData AppState where
     type StoreAction AppState = AppAction
-    transform action st = case action of
-        ChangeLayerState layer | layerStates st Map.! layer == Vector -> do
+    transform action st@(AppState layerStates layerData zoomLevel) = case action of
+        ChangeLayerState layer | layerStates Map.! layer == Vector -> do
             log $ "hiding layer " <> pack (show layer)
-            return $ st { layerStates = Map.insert layer LayerHidden $ layerStates st
-                        }
-        ChangeLayerState layer
-            | layerStates st Map.! layer == WMTS && hasVectorData st layer -> do
-                log $ "already got layer " <> pack (show layer)
-                return st
-                    { layerStates = Map.insert layer Vector $ layerStates st
-                    }
-        ChangeLayerState layer | layerStates st Map.! layer == WMTS -> do
+            return $ st { layerStates = Map.insert layer LayerHidden $ layerStates }
+        
+        ChangeLayerState layer | layerStates Map.! layer == WMTS && hasVectorData st layer -> do
+            log $ "already got layer " <> pack (show layer)
+            return st { layerStates = Map.insert layer Vector $ layerStates }
+        
+        ChangeLayerState layer | layerStates Map.! layer == WMTS -> do
             log $ "retrieving vector data for layer " <> pack (show layer)
-            resp <- fetch $ Request
+            jsonAjax NoTimeout "GET" (T.pack $ vectorUrl apiBase $ let LayerType x = layerType layer in layerPath x) [] () $ \case
+                (_, Left msg)                                -> return $ disp $ VectorFetchFailed layer
+                (_, Right (GeoFeatureCollection _ features)) -> return $ disp $ VectorFetchSucceeded layer features
+            return st { layerStates = Map.insert layer VectorFetching $ layerStates }
+
+        VectorFetchFailed layer -> do
+            log $ "Failed retrieving layer " <> pack (show layer)
+            return st { layerStates = Map.insert layer LayerHidden $ layerStates }
+
+        VectorFetchSucceeded layer features -> do
+            log $ "Deserialized geojson"
+            let ret = st { layerStates = Map.insert layer Vector $ layerStates
+                            , layerData = Map.insert layer (concatMap featureGeometries features) layerData
+                            }
+            log $ "Decoded features"
+            return ret
+
+        RegionChangeComplete region -> do
+            log $ pack $ ("Region changed: " <> show region)
+            return st
+
+            {-resp <- fetch $ Request
                 (pack $ vectorUrl apiBase $ case layerType layer of
                     LayerType x -> layerPath x
                 )
@@ -81,14 +115,14 @@ instance StoreData AppState where
                     log $ "Deserialized geojson"
                     let
                         ret = st
-                            { layerStates = Map.insert layer Vector
-                                                $ layerStates st
+                            { layerStates = Map.insert layer Vector $ layerStates st
                             , layerData   =
                                 Map.insert
                                         layer
-                                        (fromList $ concatMap
-                                            (\(GeoFeature _ (MultiLine ml) (_ :: A.Value) _) ->
-                                                toList $ splitGeoMultiLine ml
+                                        (concatMap
+                                            (\case
+                                                (GeoFeature _ (Collection geom) (_ :: A.Value) _) -> toList geom
+                                                (GeoFeature _             geom  (_ :: A.Value) _) -> [geom]
                                             )
                                             features
                                         )
@@ -98,6 +132,10 @@ instance StoreData AppState where
                     return ret
                 A.Error e -> do
                     log $ "Error decoding geometry: " <> pack e
-                    return st
+                    return st-}
+        
+        ChangeLayerState layer -> do
+            log $ "Showing WMTS layer " <> pack (show layer)
+            return st { layerStates = Map.insert layer WMTS $ layerStates }
 
-appStore = AppState (Map.fromList $ fmap (, LayerHidden) allLayers) Map.empty 5
+appStore = AppState (Map.fromList $ fmap (, LayerHidden) allLayers) Map.empty 12

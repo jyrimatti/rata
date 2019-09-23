@@ -4,8 +4,6 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
-{-# LANGUAGE NoImplicitPrelude     #-}
-{-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE TypeApplications      #-}
@@ -13,7 +11,7 @@ module Maps.UrlTile (
   module Maps.UrlTile
 ) where
 
-import Maps.Types
+import Maps.Types()
 import Numeric.Natural
 import Prelude    (String,fmap,(.),mempty,($),Bool,Int)
 import React.Flux                      (ReactElementM, foreign_)

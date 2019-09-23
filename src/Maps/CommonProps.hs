@@ -6,9 +6,8 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RankNTypes            #-}
 
-module Maps.Polyline
-  ( module Maps.Polyline
-  , CommonProps.coordinates, CommonProps.strokeWidth
+module Maps.CommonProps
+  ( module Maps.CommonProps
   , LatLng(..)
   )
 where
@@ -28,11 +27,9 @@ import           React.Flux.Rn.Properties       ( Has
                                                 , props
                                                 )
 import           Maps.Types
-import Maps.CommonProps as CommonProps
 
-data Polyline
-polyline :: [Props Polyline handler] -> ReactElementM handler ()
-polyline = ($ mempty) . foreign_ "MapView.Polyline" . fmap props
+coordinates :: Has c "coordinates" => [LatLng] -> Props c handler
+coordinates = prop "coordinates"
 
-instance Has Polyline "coordinates"
-instance Has Polyline "strokeWidth"
+strokeWidth :: Has c "strokeWidth" => Double -> Props c handler
+strokeWidth = prop "strokeWidth"

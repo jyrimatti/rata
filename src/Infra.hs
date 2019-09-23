@@ -23,7 +23,8 @@ import           Data.Maybe
 import           Layer
 import           LayerTypes
 
-apiBase = "https://rata.digitraffic.fi/infra-api/0.3/"
+--apiBase = "https://rata.digitraffic.fi/infra-api/0.3/"
+apiBase = "http://localhost:8191/infra-api/0.3/"
 
 allLayers =
   [ Layer (LayerType TransportationPlanningAreas) 0  3  10

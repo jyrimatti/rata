@@ -4,17 +4,22 @@ import Data.Aeson                     ( decode
                                                 , Value
                                                 )
 import Data.ByteString.Lazy.Char8     ( pack )
-import Data.Maybe                     ( fromJust )
+import Data.Maybe                     
+import Data.Map (insert, Map, fromList, singleton)
 import GHCJS.Marshal                  ( ToJSVal(..) )
 import Prelude                        ( IO
-                                                , ($)
+                                                , ($), mapM_, fmap
                                                 )
 import React.Flux                     ( registerInitialStore )
+import React.Flux.Ajax                ( initAjax )
 import React.Flux.Rn.App              ( registerApp )
 import Store                          ( appStore )
 import Views                          ( app, testView )
 
+import Infra
+import Menu
 import Navigation.Navigation
+import Layer (layerName, LayerState(..))
 
 cmsJson :: Value
 cmsJson =
@@ -26,8 +31,10 @@ cmsJson =
 main :: IO ()
 main = do
   cms <- toJSVal cmsJson
+  --initAjax
   registerInitialStore appStore
-  navigation <- createDrawerNavigator (app cms) NavigationProps
+  navigation <- createDrawerNavigator (singleton "main" (app cms)) $ NavigationProps "main" $ Just menu
   ac         <- createAppContainer navigation
   registerApp "rnproject" ac
 
+ 

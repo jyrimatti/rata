@@ -38,10 +38,10 @@ let
 
   ghcjsbase = if compiler == "ghcjs"
               then haskellPackages.ghcjs-base
-              else haskellPackages.ghcjs-base-stub;
-              #else haskellPackages.callPackage ghcjs-base-stub-forked {};
+              #else haskellPackages.ghcjs-base-stub;
+              else haskellPackages.callPackage ghcjs-base-stub-forked {};
 
-  myproject = { mkDerivation, base, deepseq, ghcjs-base, react-hs, react-native-hs, stdenv, nodejs, z3, text, time, transformers, containers, network-uri, ghcjs-fetch, geojson, bytestring, generic-data }:
+  myproject = { mkDerivation, base, deepseq, ghcjs-base, react-hs, react-native-hs, stdenv, nodejs, z3, text, time, transformers, containers, network-uri, ghcjs-fetch, geojson, bytestring, generic-data, lens }:
       mkDerivation {
         pname = "myproject";
         version = "0.1.0.0";
@@ -49,7 +49,7 @@ let
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
-          base deepseq ghcjs-base react-hs react-native-hs text time transformers containers network-uri ghcjs-fetch geojson bytestring generic-data
+          base deepseq ghcjs-base react-hs react-native-hs text time transformers containers network-uri ghcjs-fetch geojson bytestring generic-data lens
         ];
         buildDepends = [pkgs.haskellPackages.cabal-install];
         license = stdenv.lib.licenses.mit;
@@ -135,7 +135,7 @@ let
  
   drv = haskellPackages.callPackage myproject {
     react-hs = react_hs;
-    react-native-hs = haskellPackages.callPackage react-native-hs { react-hs = react_hs; ghcjs-base = ghcjsbase; };
+    react-native-hs = haskellPackages.callPackage react-native-hs-local { react-hs = react_hs; ghcjs-base = ghcjsbase; };
     ghcjs-base = ghcjsbase;
     ghcjs-fetch = pkgs.haskell.lib.dontCheck(haskellPackages.callPackage ghcjs-fetch-forked { ghcjs-base = ghcjsbase; });
   };

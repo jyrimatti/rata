@@ -8,8 +8,8 @@
 module Maps.MapView
   ( module Maps.MapView
   , Region(..)
-  , Camera(..)
-  , Inset(..)
+  , Camera(Camera)
+  , Inset(Inset)
   , PaddingAdjustmentBehavior(..)
   , MapType(..)
   , Color(..)
@@ -38,7 +38,7 @@ import           Maps.Types                     ( Region(..)
                                                 , Frame(..)
                                                 , MapType(..)
                                                 , Inset(..)
-                                                , Marker(..)
+                                                , KmlMarker(..)
                                                 , KmlContainer(..)
                                                 , IndoorBuilding(..)
                                                 , IndoorLevel(..)
@@ -62,6 +62,7 @@ import           React.Flux.Rn.Properties       ( Has
                                                 , prop
                                                 , props
                                                 )
+import           React.Flux.Rn.Events     (EventHandlerType, on0, on1)
 import           React.Flux.Rn.Props.CommonProps
                                                 ( style )
 import qualified React.Flux.Rn.StyleProps.LayoutStyleProps
@@ -80,8 +81,11 @@ mapView =
   foreign_ "MapView"
     . fmap props
     . (style
-        [ LayoutStyleProps.width (LayoutStyleProps.Perc 100)
-        , LayoutStyleProps.height (LayoutStyleProps.Perc 100)
+        [ LayoutStyleProps.position LayoutStyleProps.Absolute
+        , LayoutStyleProps.left 0
+        , LayoutStyleProps.right 0
+        , LayoutStyleProps.top 0
+        , LayoutStyleProps.bottom 0
         ] :
       )
 
@@ -208,6 +212,13 @@ kmlSrc = prop "kmlSrc"
 compassOffset :: Has c "compassOffset" => Point -> Props c handler
 compassOffset = prop "compassOffset"
 
+
+-- Events
+
+onRegionChangeComplete :: Has c "onRegionChangeComplete" => (Region -> EventHandlerType handler) -> Props c handler
+onRegionChangeComplete f = on1 "onRegionChangeComplete" f
+
+
 instance Has MapView "style"
 instance Has MapView "provider"
 instance Has MapView "region"
@@ -248,5 +259,12 @@ instance Has MapView "legalLabelInsets"
 instance Has MapView "kmlSrc"
 instance Has MapView "compassOffset"
 
+instance Has MapView "onRegionChangeComplete"
+
 instance Has MapView "width"
 instance Has MapView "height"
+instance Has MapView "position"
+instance Has MapView "left"
+instance Has MapView "right"
+instance Has MapView "top"
+instance Has MapView "bottom"

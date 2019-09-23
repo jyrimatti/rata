@@ -6,22 +6,25 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE PolyKinds             #-}
 {-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE DeriveAnyClass               #-}
 module Maps.Types (
   module Maps.Types,
   Inset
 ) where
 
+import           Control.DeepSeq
 import           Data.Aeson                 (FromJSON (..), ToJSON (..))
 import           GHC.Generics               (Generic)
 import           GHCJS.Marshal              (FromJSVal (..), ToJSVal (..))
 import           Numeric.Natural            (Natural)
-import           Prelude                    (Bool, Double, IO, Int, Maybe (..),
+import           Prelude                    (Bool, Double, IO, Int, Maybe (..), Eq,
                                              Num, Show, String, error, fmap,
                                              fromIntegral, id, init, last, pure,
                                              read, undefined, ($), (+), (++),
                                              (.), (<$>), (==), (>>=))
 import Data.Time.Clock.POSIX
 import React.Flux.Rn.Types (str,Inset)
+import           React.Flux.Rn.Events       (fromNativeJSON, nativeEvent)
 
 {-# ANN module ("HLint: ignore Use camelCase" :: String) #-}
 
@@ -38,10 +41,12 @@ data Region = Region {
   longitude :: Double,
   latitudeDelta :: Double,
   longitudeDelta :: Double
-} deriving (Show,Generic)
+} deriving (Show, Generic, NFData, Eq)
 instance ToJSON Region
 instance ToJSVal Region where
   toJSVal = toJSVal . toJSON
+instance FromJSON Region
+instance FromJSVal Region where fromJSVal = fromNativeJSON
 
 data Camera = Camera {
   center :: LatLng,
@@ -102,18 +107,18 @@ instance ToJSVal PaddingAdjustmentBehavior where
     toJSVal Automatic = str "automatic"
     toJSVal Never    = str "never"
 
-data Marker = Marker {
+data KmlMarker = KmlMarker {
   id :: String,
   coordinate :: LatLng,
   title :: String,
   description :: String
 } deriving (Show,Generic)
-instance ToJSON Marker
-instance ToJSVal Marker where
+instance ToJSON KmlMarker
+instance ToJSVal KmlMarker where
   toJSVal = toJSVal . toJSON
 
 newtype KmlContainer = KmlContainer {
-  markers :: [Marker]
+  markers :: [KmlMarker]
 } deriving (Show,Generic)
 instance ToJSON KmlContainer
 instance ToJSVal KmlContainer where

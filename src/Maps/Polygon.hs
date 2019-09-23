@@ -6,8 +6,8 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RankNTypes            #-}
 
-module Maps.Polyline
-  ( module Maps.Polyline
+module Maps.Polygon
+  ( module Maps.Polygon
   , CommonProps.coordinates, CommonProps.strokeWidth
   , LatLng(..)
   )
@@ -30,9 +30,9 @@ import           React.Flux.Rn.Properties       ( Has
 import           Maps.Types
 import Maps.CommonProps as CommonProps
 
-data Polyline
-polyline :: [Props Polyline handler] -> ReactElementM handler ()
-polyline = ($ mempty) . foreign_ "MapView.Polyline" . fmap props
+data Polygon
+polygon :: [Props Polygon handler] -> ReactElementM handler ()
+polygon = ($ mempty) . foreign_ "MapView.Polygon" . fmap props
 
-instance Has Polyline "coordinates"
-instance Has Polyline "strokeWidth"
+instance Has Polygon "coordinates"
+instance Has Polygon "strokeWidth"

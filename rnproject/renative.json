@@ -50,7 +50,7 @@
         "react-native-reanimated": "source:rnv",
         "react-native-vector-icons": "source:rnv",
         "react-native-maps": {
-            "version": "0.19.0",
+            "version": "0.25.0",
             "ios": {
                 "podName": "react-native-maps"
             },
@@ -70,7 +70,35 @@
                 "react-native-web-maps": "0.2.0"
             }
         },
-        "react-native-screens": "source:rnv"
+        "react-native-screens": "source:rnv",
+        "react-native-svg": {
+            "name": "react-native-svg",
+            "version": "9.4.0",
+            "ios": {
+                "podName": "RNSVG"
+            },
+            "tvos": {
+                "podName": "RNSVG"
+            },
+            "android": {
+                "package": "com.horcrux.svg.SvgPackage"
+            },
+            "androidtv": {
+                "package": "com.horcrux.svg.SvgPackage"
+            },
+            "webpack": {
+                "modulePaths": [
+                    "react-native-svg",
+                    "react-native-svg-web"
+                ],
+                "moduleAliases": {
+                    "react-native-maps": "react-native-svg-web"
+                }
+            },
+            "npm": {
+                "react-native-svg-web": "1.0.1"
+            }
+        }
     },
     "permissions": {
         "ios": {},
@@ -133,7 +161,9 @@
         },
         "web": {
             "webpackConfig": {
-                "customScripts": ["https://maps.googleapis.com/maps/api/js?key=AIzaSyAdZcPjDibD3Z_WtymQ3x-gSzfE1zfi7WY"]
+                "customScripts": [
+                    "https://maps.googleapis.com/maps/api/js?key=AIzaSyAdZcPjDibD3Z_WtymQ3x-gSzfE1zfi7WY"
+                ]
             }
         }
     }
