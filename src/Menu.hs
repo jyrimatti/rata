@@ -46,7 +46,7 @@ import Store
 import Layer
 import Dispatcher
 
-menu = mkControllerView @'[StoreArg AppState] "menu" $ \(AppState layerStates layerData zoomLevel) () -> do
+menu = mkControllerView @'[StoreArg AppState] "menu" $ \(AppState _ layerStates _ zoomLevel _) () -> do
     scrollView [] $ do
         mapM_ (\layer -> layerButton (zoomLevel, layer, layerStates Map.! layer)) allLayers
 
@@ -61,6 +61,7 @@ layerButton = mkView "layerButton" $ \(zoomLevel, layer, state) -> do
 disabledForLayer zoomLevel (Layer _ minZoom _ maxZoom) =
     zoomLevel < minZoom || zoomLevel > maxZoom
 
-buttonColor LayerHidden = Rgba 42 42 42 42
-buttonColor WMTS        = Rgb 0 255 0
-buttonColor Vector      = Rgb 0 0 255
+buttonColor LayerHidden    = Rgba 42 42 42 42
+buttonColor WMTS           = Rgb 0 255 0
+buttonColor Vector         = Rgb 0 0 255
+buttonColor VectorFetching = Rgb 0 0 128

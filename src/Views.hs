@@ -32,8 +32,10 @@ import           LayerTypes
 import           Maps.MapView
 import           Maps.Circle
 import           Maps.Polyline
+import           Maps.Overlay
 import           Maps.Polygon
 import           Maps.Marker
+import Navigation.Navigation
 import           Maps.UrlTile as UrlTile
 import           Numeric.Natural
 import           Prelude                        ( ($)
@@ -41,6 +43,7 @@ import           Prelude                        ( ($)
                                                 , show
                                                 , error
                                                 , mempty
+                                                , IO
                                                 , (*)
                                                 , (.)
                                                 , fmap
@@ -54,12 +57,13 @@ import           Prelude                        ( ($)
                                                 , (&&)
                                                 , (||)
                                                 , not
+                                                , return
                                                 , Int
                                                 )
 import           React.Flux.Rn.APIs             ( Platform(..)
                                                 , platform
                                                 )
-import           React.Flux.Rn.Components.Button
+import           React.Flux.Rn.Components.Button as Button
 import           React.Flux.Rn.Components.ScrollView
 import           React.Flux.Rn.Components.View
 import           React.Flux.Rn.Components.Text
@@ -69,40 +73,33 @@ import           React.Flux.Rn.Views
 import           React.Flux.Rn.APIs             ( log )
 import           Store
 
-testView :: ReactView ()
-testView = mkControllerView @'[] "testView" $ \() ->
-    "testView"
-
-initialReg = Region 61.4858493 23.9091292 0.5 0.5
-
+emptyView :: ReactView ()
+emptyView = mkControllerView @'[] "emptyView" $ \() -> mempty
 
 
 app :: JSVal -> ReactView ()
 app cms =
-  mkControllerView @'[StoreArg AppState] "Rata"
-    $ \(AppState layerStates layerData zoomLevel) () ->
-        view
-            [ style
-                [height (Perc 100), flex 1, flexDirection Row]
-            ]
+  mkControllerView @'[StoreArg AppState] "Rata" $ \(AppState _ layerStates layerData zoomLevel initialReg) () ->
+        view [ style [ height (Perc 100)
+                     , flex 1
+                     , flexDirection Row]]
           $ do
-              view [style [ position Absolute
-                          , left 0
-                          , right 0
-                          , top 0
-                          , bottom 0]] $ do
+              view [ style [ position Absolute
+                           , left 0
+                           , right 0
+                           , top 0
+                           , bottom 0]] $ do
                 mapView
-                    [ mapType
-                      $ if platform == IOS then MutedStandard else Standard
-                    , showsUserLocation True
-                    , region initialReg
-                    , customMapStyle cms
-                    , onRegionChangeComplete (dispatch . RegionChangeComplete)
-                    ]
-                  $ do
+                        [ mapType $ if platform == IOS then MutedStandard else Standard
+                        , showsUserLocation True
+                        , region initialReg
+                        , customMapStyle cms
+                        , onRegionChangeComplete (dispatch . RegionChangeComplete)
+                        ]
+                      $ do
                       mapM_
                           (\(i, layer) -> wmtsLayer
-                            (zoomLevel, ((-1)*i), layer, (layerStates Map.! layer))
+                            (zoomLevel, i, layer, (layerStates Map.! layer))
                           )
                         $ zip [1 ..] allLayers
                       mapM_
@@ -114,6 +111,9 @@ app cms =
                           )
                         )
                         allLayers
+                button [ title "Menu"
+                       , Button.onPress (dispatch ToggleLayerMenu)
+                       ]
 
 wmtsLayer :: (Natural, Int, Layer, LayerState) -> ReactElementM eventHandler ()
 wmtsLayer = mkView "wmtsLayer" $ \(zoomLevel, index, layer, state) ->

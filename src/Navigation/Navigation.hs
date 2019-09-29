@@ -15,8 +15,10 @@ import           Data.Aeson                     ( FromJSON(..)
                                                 , ToJSON(..)
                                                 , (.:)
                                                 , (.=)
+                                                , Object
                                                 )
 import           Data.Function
+import Data.JSString (unpack)
 import           Data.Map (Map,singleton,mapWithKey,toList)
 import           GHC.Generics                   ( Generic )
 import           GHCJS.Marshal                  
@@ -35,6 +37,8 @@ import           Prelude                        ( String
                                                 , Show
                                                 , (<>)
                                                 , Bool
+                                                , Either(..)
+                                                , mempty
                                                 )                     
 import           React.Flux       hiding (on)
 import React.Flux.View
@@ -46,10 +50,13 @@ import qualified React.Flux.Rn.StyleProps.LayoutStyleProps
                                                as LayoutStyleProps
 import           React.Flux.Rn.Types            ( Color(..)
                                                 , Inset(..)
-                                                )
+                                                , str)
 import           React.Flux.Rn.Views
+import           System.IO.Unsafe (unsafePerformIO)
+import Maps.Types
 
-type Navigation = JSVal
+type Navigation = ReactViewRef Object
+type NavigationId = JSString
 
 data NavigationProps = NavigationProps {
     initialRouteName :: String,
@@ -65,6 +72,14 @@ instance ToJSVal NavigationProps where
 
 instance IsJSVal (View ())
 
+data DrawerAction = OpenDrawer | CloseDrawer | ToggleDrawer
+    deriving (Show,Generic)
+instance ToJSON DrawerAction
+instance ToJSVal DrawerAction where
+  toJSVal OpenDrawer   = str "openDrawer"
+  toJSVal CloseDrawer  = str "closeDrawer"
+  toJSVal ToggleDrawer = str "toggleDrawer"
+
 createDrawerNavigator :: Map String (View ()) -> NavigationProps -> IO Navigation
 createDrawerNavigator pages p = do
     pp <- toJSVal p
@@ -72,8 +87,15 @@ createDrawerNavigator pages p = do
     mapM_ (\(k,v) -> JSO.setProp (toJSString k) (jsval v) o) $ toList pages
     js_createDrawerNavigator o pp
 
-createAppContainer :: Navigation -> IO (View ())
-createAppContainer = js_createAppContainer
+createAppContainer :: Navigation -> [Props Navigation handler] -> IO (ReactElementM handler ())
+createAppContainer n p = do
+    aa <- js_createAppContainer n
+    return $ elementToM () $ ForeignElement (Right aa) (fmap props p) mempty
+
+getNavigation :: String -> IO Navigation
+getNavigation navigationId = do
+    ii <- toJSVal navigationId
+    js_getNavigation ii
 
 data NavigateProps = NavigateProps {
     routeName :: String,
@@ -88,30 +110,63 @@ instance ToJSVal NavigateProps where
 navigate :: NavigateProps -> IO ()
 navigate = js_navigate <=< toJSVal
 
+ref :: Has c "ref" => (NavigationId -> EventHandlerType handler) -> Props c handler
+ref f = prop_ $ CallbackPropertyWithSingleArgument "ref" $ \h -> do
+    ret <- js_ref h
+    return $ f ret
+
+drawerAction :: DrawerAction -> NavigationId -> IO ()
+drawerAction a n = do
+    act <- toJSVal a
+    js_drawerAction act n
+
+instance Has Navigation "ref"
+
 #ifdef __GHCJS__
  
 foreign import javascript unsafe 
-    "$r = navigation_createDrawerNavigator($1,$2)"
-    js_createDrawerNavigator :: JSO.Object -> JSVal -> IO JSVal
+    "navigation_createDrawerNavigator($1,$2)"
+    js_createDrawerNavigator :: JSO.Object -> JSVal -> IO Navigation
 
 foreign import javascript unsafe
-    "$r = navigation_createAppContainer($1)"
-    js_createAppContainer :: Navigation -> IO (View ())
+    "navigation_createAppContainer($1)"
+    js_createAppContainer :: Navigation -> IO (ReactViewRef Object)
 
 foreign import javascript unsafe
     "navigation_NavigationActions.navigate($1)"
     js_navigate :: JSVal -> IO ()
 
+foreign import javascript unsafe
+    "window[$2].dispatch(navigation_DrawerActions[$1]())"
+    js_drawerAction :: JSVal -> NavigationId -> IO ()
+
+foreign import javascript unsafe
+    "window[$1]"
+    js_getNavigation :: JSVal -> IO Navigation
+
+foreign import javascript unsafe
+    "$r = ''+Math.random(); window[$r] = $1"
+    js_ref :: HandlerArg -> IO NavigationId
+
 #else
 
-js_createDrawerNavigator :: JSO.Object -> JSVal -> IO JSVal
+js_createDrawerNavigator :: JSO.Object -> JSVal -> IO Navigation
 js_createDrawerNavigator _ = error "js_createDrawerNavigator only works with GHCJS"
 
-js_createAppContainer :: Navigation -> IO (View ())
+js_createAppContainer :: Navigation -> IO (ReactViewRef Object)
 js_createAppContainer _ = error "js_createAppContainer only works with GHCJS"
 
 js_navigate :: JSVal -> IO ()
 js_navigate _ = error "js_navigate only works with GHCJS"
+
+js_drawerAction :: JSVal -> NavigationId -> IO ()
+js_drawerAction _ = error "js_drawerAction only works with GHCJS"
+
+js_getNavigation :: JSVal -> IO Navigation
+js_getNavigation _ = error "js_getNavigation only works with GHCJS"
+
+js_ref :: HandlerArg -> IO NavigationId
+js_ref _ = error "js_ref only works with GHCJS"
 
 #endif
 

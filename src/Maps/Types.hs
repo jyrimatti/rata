@@ -24,7 +24,7 @@ import           Prelude                    (Bool, Double, IO, Int, Maybe (..), 
                                              (.), (<$>), (==), (>>=))
 import Data.Time.Clock.POSIX
 import React.Flux.Rn.Types (str,Inset)
-import           React.Flux.Rn.Events       (fromNativeJSON, nativeEvent)
+import           React.Flux.Rn.Events       (fromJSON, nativeEvent)
 
 {-# ANN module ("HLint: ignore Use camelCase" :: String) #-}
 
@@ -39,14 +39,14 @@ instance ToJSVal LatLng where
 data Region = Region {
   latitude :: Double,
   longitude :: Double,
-  latitudeDelta :: Double,
-  longitudeDelta :: Double
+  latitudeDelta :: Maybe Double,
+  longitudeDelta :: Maybe Double
 } deriving (Show, Generic, NFData, Eq)
 instance ToJSON Region
 instance ToJSVal Region where
   toJSVal = toJSVal . toJSON
 instance FromJSON Region
-instance FromJSVal Region where fromJSVal = fromNativeJSON
+instance FromJSVal Region where fromJSVal = fromJSON
 
 data Camera = Camera {
   center :: LatLng,

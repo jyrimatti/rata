@@ -1,4 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude         #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE DataKinds          #-}
 {-# LANGUAGE TypeApplications          #-}
 import Data.Aeson                     ( decode
                                                 , Value
@@ -8,18 +10,20 @@ import Data.Maybe
 import Data.Map (insert, Map, fromList, singleton)
 import GHCJS.Marshal                  ( ToJSVal(..) )
 import Prelude                        ( IO
-                                                , ($), mapM_, fmap
+                                                , ($), mapM_, fmap, mempty, (.)
                                                 )
-import React.Flux                     ( registerInitialStore )
+import React.Flux
 import React.Flux.Ajax                ( initAjax )
 import React.Flux.Rn.App              ( registerApp )
 import Store                          ( appStore )
-import Views                          ( app, testView )
+import Views                          ( app, emptyView )
 
 import Infra
 import Menu
 import Navigation.Navigation
 import Layer (layerName, LayerState(..))
+import Store
+import Dispatcher
 
 cmsJson :: Value
 cmsJson =
@@ -30,11 +34,24 @@ cmsJson =
 
 main :: IO ()
 main = do
+  -- parse map styling
   cms <- toJSVal cmsJson
-  --initAjax
+
+  -- initialize future ajax requests
+  initAjax
+
+  -- register store
   registerInitialStore appStore
-  navigation <- createDrawerNavigator (singleton "main" (app cms)) $ NavigationProps "main" $ Just menu
-  ac         <- createAppContainer navigation
-  registerApp "rnproject" ac
+
+  let mainView = app cms
+  
+  -- create layer menu
+  navigation <- createDrawerNavigator (singleton "main" mainView) $ NavigationProps "main" $ Just menu
+
+  -- initialize layer menu, and save reference for future use
+  ac <- createAppContainer navigation [ ref (dispatch . SaveLayerMenu) ]
+
+  -- wrap the app to a contoller-view, and register
+  registerApp "rnproject" $ mkControllerView @'[] "wrapper" $ \() -> ac
 
  
