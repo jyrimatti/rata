@@ -25,9 +25,10 @@ export NODE_OPTIONS=--max_old_space_size=4096
 (test -f $DIR/rnproject/renative.json &&
     cd $DIR/rnproject &&
     cp $DIR/register_addons.js $DIR/rnproject/src/ &&
-    ($RNV $@; true)) ||
+    ($RNV "$@"; true)) ||
 (echo "Give 'rnproject' for project Name" && 
     $RNV new && 
     cd $DIR/rnproject && 
     $RNV configure; 
+    sed -i 's/"react-native": "0.59.5",/"react-native": "0.59.10",/' $DIR/rnproject/package.json;
     sed -i 's/^{/{"browser":{"child_process":false,"fs":false,"path":false,"os":false},/' $DIR/rnproject/package.json)
