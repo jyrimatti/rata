@@ -12,19 +12,10 @@ module Maps.CommonProps
   )
 where
 
-import           Prelude                        ( Double
-                                                , fmap
-                                                , (.)
-                                                , mempty
-                                                , ($)
-                                                )
-import           React.Flux                     ( foreign_
-                                                , ReactElementM
-                                                )
+import           Prelude                        ( Double )
 import           React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop
-                                                , props
                                                 )
 import           Maps.Types
 

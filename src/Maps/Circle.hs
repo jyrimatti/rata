@@ -12,8 +12,7 @@ module Maps.Circle
   )
 where
 import Numeric.Natural
-import           Prelude                        ( Double
-                                                , fmap
+import           Prelude                        (fmap
                                                 , (.)
                                                 , mempty
                                                 , ($)

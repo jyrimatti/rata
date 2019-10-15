@@ -15,16 +15,14 @@
 {-# LANGUAGE LambdaCase      #-}
 module Views where
 
-import           Data.Foldable                  ( toList, concatMap )
+import           Data.Foldable                  ( concatMap )
 import           Data.Geospatial as Geospatial
 import           Data.LineString
 import           Data.LinearRing
 import qualified Data.Map                      as Map
 import           Data.Maybe
 import           Data.Maybe                     ( isJust )
-import qualified Data.Sequence                 as Seq
 import           Dispatcher
-import           Data.JSString                  ( pack )
 import           GHCJS.Types                    ( JSVal )
 import           Infra
 import           Layer
@@ -32,10 +30,7 @@ import           LayerTypes
 import           Maps.MapView
 import           Maps.Circle
 import           Maps.Polyline
-import           Maps.Overlay
 import           Maps.Polygon
-import           Maps.Marker
-import Navigation.Navigation
 import           Maps.UrlTile as UrlTile
 import           Numeric.Natural
 import           Prelude                        ( ($)
