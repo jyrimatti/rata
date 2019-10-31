@@ -1,12 +1,12 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveAnyClass    #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 module Infra where
 
-import           Data.Maybe
+import Data.Maybe
 
-import           Layer
-import           LayerTypes
+import Layer
+import LayerTypes
 
 apiBase = "https://rata.digitraffic.fi/infra-api/0.3/"
 
@@ -51,8 +51,7 @@ allLayers =
   , Layer (LayerType SeparationFields)            10 15 20
   ]
 
-layerPath TransportationPlanningAreas =
-  ("liikennesuunnittelualueet", Nothing, [])
+layerPath TransportationPlanningAreas = ("liikennesuunnittelualueet", Nothing, [])
 layerPath SpeedRestrictionAreas     = ("nopeusrajoitusalueet", Nothing, [])
 layerPath AccountingRailwaySections = ("tilirataosat", Nothing, [])
 layerPath Railways                  = ("radat", Nothing, [])
@@ -66,10 +65,8 @@ layerPath Stations = ("rautatieliikennepaikat", Just "liikennepaikka", [])
 layerPath Stops = ("rautatieliikennepaikat", Just "seisake", [])
 layerPath LineSwitches = ("rautatieliikennepaikat", Just "linjavaihde", [])
 layerPath TrackCircuits             = ("raideosuudet", Just "eristysosuus", [])
-layerPath AxleCountingSections =
-  ("raideosuudet", Just "akselinlaskentaosuus", [])
-layerPath AudioFrequencyTrackCircuits =
-  ("raideosuudet", Just "raidevirtapiiri", [])
+layerPath AxleCountingSections = ("raideosuudet", Just "akselinlaskentaosuus", [])
+layerPath AudioFrequencyTrackCircuits = ("raideosuudet", Just "raidevirtapiiri", [])
 layerPath LevelCrossings       = ("tasoristeykset", Nothing, [])
 layerPath Bridges              = ("sillat", Nothing, [])
 layerPath Tunnels              = ("tunnelit", Nothing, [])
@@ -85,11 +82,11 @@ layerPath RailInsulations      = ("elementit", Just "raideeristys", [])
 layerPath GroupingInsulators   = ("elementit", Just "ryhmityseristin", [])
 layerPath StopBoards           = ("elementit", Just "seislevy", [])
 layerPath StationBoundaryMarks = ("elementit", Just "liikennepaikanraja", [])
-layerPath PantographMonitoringCameras =
-  ("elementit", Just "virroitinvalvontakamera", [])
+layerPath PantographMonitoringCameras = ("elementit", Just "virroitinvalvontakamera", [])
 layerPath RFIDReaders           = ("elementit", Just "rfidlukija", [])
 layerPath HotboxDetectors       = ("elementit", Just "kuumakayntiilmaisin", [])
 layerPath WheelForceIndicators  = ("elementit", Just "pyoravoimailmaisin", [])
 layerPath ElectrificationGroups = ("kytkentaryhmat", Nothing, [])
 layerPath SeparationSections    = ("elementit", Just "erotusjaksot", [])
 layerPath SeparationFields      = ("elementit", Just "erotuskentat", [])
+

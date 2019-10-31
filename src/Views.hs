@@ -2,6 +2,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
+{-# LANGUAGE LambdaCase                #-}
 {-# LANGUAGE MultiParamTypeClasses     #-}
 {-# LANGUAGE NoImplicitPrelude         #-}
 {-# LANGUAGE OverloadedStrings         #-}
@@ -12,29 +13,29 @@
 {-# LANGUAGE TypeFamilyDependencies    #-}
 {-# LANGUAGE TypeOperators             #-}
 {-# LANGUAGE UndecidableInstances      #-}
-{-# LANGUAGE LambdaCase      #-}
 module Views where
 
 import           Data.Foldable                  ( concatMap )
 import           Data.Geospatial as Geospatial
-import           Data.LineString
 import           Data.LinearRing
+import           Data.LineString
 import qualified Data.Map                      as Map
 import           Data.Maybe
 import           Data.Maybe                     ( isJust )
+import           Debug.Trace (trace)
 import           Dispatcher
 import           GHCJS.Types                    ( JSVal )
 import           Infra
 import           Layer
 import           LayerTypes
-import           Maps.MapView
 import           Maps.Circle
-import           Maps.Polyline
+import           Maps.MapView
 import           Maps.Polygon
+import           Maps.Polyline
 import           Maps.UrlTile as UrlTile
 import           Numeric.Natural
 import           Prelude                        ( ($)
-                                                , zip
+                                                , mapM, zip
                                                 , show
                                                 , error
                                                 , mempty
@@ -55,17 +56,18 @@ import           Prelude                        ( ($)
                                                 , return
                                                 , Int
                                                 )
+import           React.Flux.Rn.APIs             ( log )
 import           React.Flux.Rn.APIs             ( Platform(..)
                                                 , platform
                                                 )
 import           React.Flux.Rn.Components.Button as Button
 import           React.Flux.Rn.Components.ScrollView
-import           React.Flux.Rn.Components.View
 import           React.Flux.Rn.Components.Text
+import           React.Flux.Rn.Components.View
 import           React.Flux.Rn.Props.CommonProps
                                                 ( style )
 import           React.Flux.Rn.Views
-import           React.Flux.Rn.APIs             ( log )
+
 import           Store
 
 emptyView :: ReactView ()
@@ -74,7 +76,7 @@ emptyView = mkControllerView @'[] "emptyView" $ \() -> mempty
 
 app :: JSVal -> ReactView ()
 app cms =
-  mkControllerView @'[StoreArg AppState] "Rata" $ \(AppState _ layerStates layerData zoomLevel initialReg) () ->
+  mkControllerView @'[StoreArg AppState] "Rata" $ \(AppState _ layerStates layerData zoomLevel initialReg _) () ->
         view [ style [ height (Perc 100)
                      , flex 1
                      , flexDirection Row]]
@@ -89,7 +91,7 @@ app cms =
                         , showsUserLocation True
                         , region initialReg
                         , customMapStyle cms
-                        , onRegionChangeComplete (dispatch . RegionChangeComplete)
+                        , onRegionChangeComplete (\this region -> dispatch $ RegionChangeComplete region)
                         ]
                       $ do
                       mapM_
@@ -127,17 +129,28 @@ vectorLayer = mkView "vectorLayer" $ \(zoomLevel, layer, state, layerData) ->
   if vectorVisible zoomLevel layer state && isJust layerData
   then
       mapM_ (\case
-              Geospatial.Point (GeoPoint geom) -> circle [ center $ toLatLng $ retrieveXY geom, radius 50 ]
-              Geospatial.MultiLine geom -> polyline
-                [ strokeWidth 0.5
-                , (coordinates . fmap (toLatLng . retrieveXY) . concatMap (fromLineString . _unGeoLine) . splitGeoMultiLine) geom
+              Geospatial.Point geom -> trace "point" $ circle
+                [ radius 50
+                , (center . toLatLng . retrieveXY . _unGeoPoint) geom
                 ]
-              Geospatial.Polygon geom -> polygon
+              Geospatial.MultiPoint geom -> trace "multipoint" $ mapM_ (\geopoint -> circle
+                [ radius 50
+                , (center . toLatLng . retrieveXY . _unGeoPoint) geopoint
+                ]) $ splitGeoMultiPoint geom
+              Geospatial.Line geom -> trace "line" $ polyline
+                [ strokeWidth 0.5
+                , (coordinates . fmap (toLatLng . retrieveXY) . fromLineString . _unGeoLine) geom
+                ]
+              Geospatial.MultiLine geom -> trace "multiline" $ mapM_ (\geoline -> polyline
+                [ strokeWidth 0.5
+                , (coordinates . fmap (toLatLng . retrieveXY) . fromLineString . _unGeoLine) geoline
+                ]) $ splitGeoMultiLine geom
+              Geospatial.Polygon geom -> trace "polygon" $ polygon
                 [ (coordinates . fmap (toLatLng . retrieveXY) . concatMap fromLinearRing . _unGeoPolygon) geom
                 ]
-              {-Geospatial.MultiPolygon geom -> polygon
-                [ (coordinates . fmap (toLatLng . retrieveXY) . concatMap (concatMap fromLinearRing . _unGeoPolygon) . splitGeoMultiPolygon) geom
-                ]-}
+              Geospatial.MultiPolygon geom -> trace "multipolygon" $ mapM_ (\geopolygon -> polygon
+                [ (coordinates . fmap (toLatLng . retrieveXY) . concatMap fromLinearRing . _unGeoPolygon) geopolygon
+                ]) $ splitGeoMultiPolygon geom
               _ -> error "Not implemented!"
           )
         $ fromJust layerData

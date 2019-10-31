@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
@@ -17,11 +18,13 @@ module Maps.MapView
   )
 where
 
+import           Control.Applicative ((<$>), (<*>))
 import           Data.Aeson                     ( FromJSON(..)
                                                 , ToJSON(..)
                                                 , (.:)
                                                 , (.=)
                                                 )
+import           Data.Maybe (fromJust)
 import           GHC.Generics                   ( Generic )
 
 import           GHCJS.Marshal                  ( FromJSVal(..)
@@ -29,6 +32,8 @@ import           GHCJS.Marshal                  ( FromJSVal(..)
                                                 )
 import           GHCJS.Types                    ( JSString
                                                 , JSVal
+                                                , IsJSVal
+                                                , jsval
                                                 )
 import           Maps.Types                     ( Region(..)
                                                 , Camera(..)
@@ -45,24 +50,23 @@ import           Maps.Types                     ( Region(..)
                                                 , PaddingAdjustmentBehavior(..)
                                                 )
 import           Numeric.Natural
-import           Prelude                        ( String
+import           Prelude                        (($),  String
                                                 , Double
-                                                , fmap
+                                                , IO
+                                                , error, fmap
                                                 , (.)
                                                 , Show
                                                 , (<>)
                                                 , Bool
                                                 )
-import           React.Flux                     ( foreign_ )
-import           React.Flux                     ( ReactElementM
-                                                , foreign_
-                                                )
+import           React.Flux hiding (style)
+import           React.Flux.Internal
+import           React.Flux.Rn.Events     (EventHandlerType, on0, on1, on1t, invoke1, This(..))
 import           React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop
                                                 , props
                                                 )
-import           React.Flux.Rn.Events     (EventHandlerType, on0, on1)
 import           React.Flux.Rn.Props.CommonProps
                                                 ( style )
 import qualified React.Flux.Rn.StyleProps.LayoutStyleProps
@@ -70,6 +74,7 @@ import qualified React.Flux.Rn.StyleProps.LayoutStyleProps
 import           React.Flux.Rn.Types            ( Color(..)
                                                 , Inset(..)
                                                 )
+import           React.Flux.View
 
 data MapView
 -- needs dimensions to show up
@@ -215,9 +220,16 @@ compassOffset = prop "compassOffset"
 
 -- Events
 
-onRegionChangeComplete :: Has c "onRegionChangeComplete" => (Region -> EventHandlerType handler) -> Props c handler
-onRegionChangeComplete f = on1 "onRegionChangeComplete" f
+onRegionChangeComplete :: Has c "onRegionChangeComplete" => (This c -> Region -> EventHandlerType handler) -> Props c handler
+onRegionChangeComplete f = on1t "onRegionChangeComplete" f
 
+
+-- Methods
+
+pointForCoordinate :: This MapView -> LatLng -> IO Point
+pointForCoordinate this coordinate = do
+  b <- toJSVal coordinate
+  fmap fromJust (invoke1 this "pointForCoordinate" b)
 
 instance Has MapView "style"
 instance Has MapView "provider"

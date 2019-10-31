@@ -1,10 +1,10 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric  #-}
 module LayerTypes where
 
-import           Control.DeepSeq
-import           GHC.Generics                   ( Generic )
-import           Data.Typeable
+import Control.DeepSeq
+import Data.Typeable
+import GHC.Generics                   ( Generic )
 
 data Infra =
     TransportationPlanningAreas | SpeedRestrictionAreas | AccountingRailwaySections |

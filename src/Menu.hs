@@ -7,51 +7,35 @@
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE PolyKinds                 #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
-{-# LANGUAGE StandaloneDeriving        #-}
 {-# LANGUAGE TypeApplications          #-}
 {-# LANGUAGE TypeFamilyDependencies    #-}
 {-# LANGUAGE TypeOperators             #-}
 {-# LANGUAGE UndecidableInstances      #-}
 module Menu where
 
-import           Prelude                        ( ($)
-                                            , zip
-                                            , mempty
-                                            , (.)
-                                            , fmap
-                                            , mapM_
-                                            , Bool(True, False)
-                                            , (==)
-                                            , (<=)
-                                            , (>)
-                                            , (<)
-                                            , (>=)
-                                            , (&&)
-                                            , (||)
-                                            , not
-                                            , Int
-                                            )
-
 import qualified Data.Map as Map
-import Numeric.Natural
 
-import React.Flux.Rn.Views
+import           Dispatcher
+import           Infra
 
-import React.Flux.Rn.Components.Button
-import React.Flux.Rn.Components.View
-import React.Flux.Rn.Components.ScrollView
+import           Layer
 
-import Infra
-import Store
-import Layer
-import Dispatcher
+import           Prelude                             (mapM_, ($), (<), (>),
+                                                      (||))
+import           React.Flux.Rn.Components.Button
 
-menu = mkControllerView @'[StoreArg AppState] "menu" $ \(AppState _ layerStates _ zoomLevel _) () -> do
-    scrollView [] $ do
+import           React.Flux.Rn.Components.ScrollView
+import           React.Flux.Rn.Components.View
+import           React.Flux.Rn.Views
+import           Store
+
+
+menu = mkControllerView @'[StoreArg AppState] "menu" $ \(AppState _ layerStates _ zoomLevel _ _) () ->
+    scrollView [] $
         mapM_ (\layer -> layerButton (zoomLevel, layer, layerStates Map.! layer)) allLayers
 
-layerButton = mkView "layerButton" $ \(zoomLevel, layer, state) -> do
-    view [style []] $ do
+layerButton = mkView "layerButton" $ \(zoomLevel, layer, state) ->
+    view [style []] $
         button [ title (layerName layer state)
                , disabled $ disabledForLayer zoomLevel layer
                , onPress (dispatch $ ChangeLayerState layer)

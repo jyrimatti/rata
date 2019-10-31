@@ -1,15 +1,16 @@
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric  #-}
-{-# LANGUAGE LambdaCase  #-}
+{-# LANGUAGE DeriveAnyClass      #-}
+{-# LANGUAGE DeriveGeneric       #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Layer where
 
-import Data.List (intercalate)
 import Control.DeepSeq
+import Data.Aeson
+import Data.ByteString.Lazy.UTF8
 import Data.Typeable                  ( Typeable )
 import GHC.Generics                   ( Generic )
 import LayerTypes
-import Maps.Types (Region(..))
 import Numeric.Natural
+import Transform
 
 data LayerState = LayerHidden | WMTS | Vector | VectorFetching
   deriving (Show, Typeable, Generic, NFData, Eq)
@@ -27,26 +28,22 @@ instance Show Layer where
 layerName :: Layer -> LayerState -> String
 layerName layer state = show (layerType layer) <> case state of VectorFetching -> "!"; _ -> ""
 
-wmtsSuffix = "/MERCATOR/{z}/{y}/{x}.png?profile"
+wmtsSuffix = "/MERCATOR/{z}/{y}/{x}.png"
 
 vectorSuffix propertyName region =
-  ".geojson?bbox=" <> intercalate "," (coords region) <> "&" <> "profile&propertyName=" <> propertyName <> "&srsName=epsg:4326"
-  where coords (Region latitude longitude (Just latitudeDelta) (Just longitudeDelta)) = [
-            show $ latitude - latitudeDelta/2
-          , show $ longitude - longitudeDelta/2
-          , show $ latitude + latitudeDelta/2
-          , show $ longitude + longitudeDelta/2]
-        coords (Region latitude longitude Nothing Nothing) = [
-            show $ latitude
-          , show $ longitude
-          , show $ latitude
-          , show $ longitude]
+  ".geojson?bbox=" <> (show $ region2bbox region) <> "&" <> "propertyName=" <> propertyName <> "&srsName=epsg:4326"
+
+vectorSuffix2 propertyName bbox =
+  ".geojson?bbox=" <> bbox2string bbox <> "&" <> "propertyName=" <> propertyName <> "&srsName=epsg:4326"
 
 wmtsUrl baseURL (layerPath, typename, _) =
   baseURL <> layerPath <> wmtsSuffix <> fmap (\x -> if x == '&' then '&' else x) (typeNames typename)
 
 vectorUrl baseURL (layerPath, typename, propertyName) region =
   baseURL <> layerPath <> vectorSuffix propertyName region <> typeNames typename
+
+vectorUrl2 baseURL (layerPath, typename, propertyName) bbox =
+  baseURL <> layerPath <> vectorSuffix2 propertyName bbox <> typeNames typename
 
 typeNames :: Maybe String -> String
 typeNames Nothing  = ""

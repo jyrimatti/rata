@@ -3,3 +3,4 @@ node_modules
 package-lock.json
 all.js
 rnproject/src/register_addons.js
+.ghc.environment.x86_64-darwin-8.4.4

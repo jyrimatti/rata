@@ -21,6 +21,7 @@ executable rata
                        containers,
                        network-uri,
                        bytestring,
+                       utf8-string,
                        ghcjs-fetch,
                        geojson,
                        lens
@@ -36,6 +37,7 @@ executable rata
                        Layer,
                        Infra,
                        Dispatcher,
+                       Transform,
                        Navigation.Navigation,
                        Maps.MapView,
                        Maps.Marker,

@@ -1,29 +1,24 @@
-{-# LANGUAGE NoImplicitPrelude         #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE DataKinds          #-}
-{-# LANGUAGE TypeApplications          #-}
-import Data.Aeson                     ( decode
-                                                , Value
-                                                )
+{-# LANGUAGE TypeApplications           #-}
+
+import Data.Aeson                     ( decode, Value)
 import Data.ByteString.Lazy.Char8     ( pack )
-import Data.Maybe                     
-import Data.Map (insert, Map, fromList, singleton)
+import Data.Map (singleton)                     
+import Data.Maybe
+import Dispatcher
 import GHCJS.Marshal                  ( ToJSVal(..) )
-import Prelude                        ( IO
-                                                , ($), mapM_, fmap, mempty, (.)
-                                                )
+import Menu
+import Navigation.Navigation
+import Prelude                        ( IO , ($), (.) )
+
 import React.Flux
 import React.Flux.Ajax                ( initAjax )
 import React.Flux.Rn.App              ( registerApp )
-import Store                          ( appStore )
-import Views                          ( app, emptyView )
-
-import Infra
-import Menu
-import Navigation.Navigation
-import Layer (layerName, LayerState(..))
 import Store
-import Dispatcher
+import Store                          ( appStore )
+import Views                          ( app )
 
 cmsJson :: Value
 cmsJson =

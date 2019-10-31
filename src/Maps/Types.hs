@@ -1,30 +1,30 @@
-{-# LANGUAGE CPP                   #-}
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE NoImplicitPrelude     #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE PolyKinds             #-}
-{-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE CPP                          #-}
+{-# LANGUAGE DataKinds                    #-}
 {-# LANGUAGE DeriveAnyClass               #-}
+{-# LANGUAGE DeriveGeneric                #-}
+{-# LANGUAGE DuplicateRecordFields        #-}
+{-# LANGUAGE NoImplicitPrelude            #-}
+{-# LANGUAGE OverloadedStrings            #-}
+{-# LANGUAGE PolyKinds                    #-}
+{-# LANGUAGE RankNTypes                   #-}
 module Maps.Types (
   module Maps.Types,
   Inset
 ) where
 
-import           Control.DeepSeq
-import           Data.Aeson                 (FromJSON (..), ToJSON (..))
-import           GHC.Generics               (Generic)
-import           GHCJS.Marshal              (FromJSVal (..), ToJSVal (..))
-import           Numeric.Natural            (Natural)
-import           Prelude                    (Bool, Double, IO, Int, Maybe (..), Eq,
+import Control.DeepSeq
+import Data.Aeson                 (FromJSON (..), ToJSON (..))
+import Data.Time.Clock.POSIX
+import GHC.Generics               (Generic)
+import GHCJS.Marshal              (FromJSVal (..), ToJSVal (..))
+import Numeric.Natural            (Natural)
+import Prelude                    (Bool, Double, IO, Int, Maybe (..), Eq,
                                              Num, Show, String, error, fmap,
                                              fromIntegral, id, init, last, pure,
                                              read, undefined, ($), (+), (++),
                                              (.), (<$>), (==), (>>=))
-import Data.Time.Clock.POSIX
+import React.Flux.Rn.Events       (fromJSON, nativeEvent)
 import React.Flux.Rn.Types (str,Inset)
-import           React.Flux.Rn.Events       (fromJSON, nativeEvent)
 
 {-# ANN module ("HLint: ignore Use camelCase" :: String) #-}
 
@@ -79,6 +79,8 @@ data Point = Point {
 instance ToJSON Point
 instance ToJSVal Point where
   toJSVal = toJSVal . toJSON
+instance FromJSON Point
+instance FromJSVal Point where fromJSVal = fromJSON
 
 data Frame = Frame {
   x :: Int,

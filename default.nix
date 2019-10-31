@@ -17,6 +17,7 @@ let
       semigroupoids = pkgs.haskell.lib.dontCheck super.semigroupoids;
       yaml = pkgs.haskell.lib.dontCheck super.yaml;
       geojson = pkgs.haskell.lib.dontCheck super.geojson;
+      lifted-async = pkgs.haskell.lib.dontCheck super.lifted-async;
     });
   });
 
@@ -131,7 +132,7 @@ let
        license = stdenv.lib.licenses.bsd3;
      };
 
-  react_hs = haskellPackages.callPackage react-hs { ghcjs-base = ghcjsbase; }; 
+  react_hs = haskellPackages.callPackage react-hs-local { ghcjs-base = ghcjsbase; }; 
  
   drv = haskellPackages.callPackage myproject {
     react-hs = react_hs;
