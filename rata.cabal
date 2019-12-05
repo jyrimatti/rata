@@ -46,7 +46,9 @@ executable rata
                        Maps.Polygon,
                        Maps.Types,
                        Maps.UrlTile,
-                       Svg.SvgUri
+                       Svg.SvgUri,
+                       Icons.Icon,
+                       Icons.IconButton
   default-language:    Haskell2010
   ghc-options: -W
   cpp-options: -DGHCJS_BROWSER

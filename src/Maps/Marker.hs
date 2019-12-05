@@ -8,6 +8,7 @@
 
 module Maps.Marker
   ( module Maps.Marker
+  , Maps.CommonProps.onPress
   , LatLng(..)
   )
 where
@@ -27,6 +28,7 @@ import           React.Flux.Rn.Properties       ( Has
                                                 , props
                                                 )
 import           Maps.Types
+import Maps.CommonProps
 
 data Marker
 marker :: [Props Marker handler] -> ReactElementM handler a -> ReactElementM handler a
@@ -36,3 +38,8 @@ coordinate :: Has c "coordinate" => LatLng -> Props c handler
 coordinate = prop "coordinate"
 
 instance Has Marker "coordinate"
+
+
+-- Events:
+
+instance Has Marker "onPress"

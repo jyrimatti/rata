@@ -6,28 +6,26 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE LambdaCase     #-}
 {-# LANGUAGE RankNTypes            #-}
-module Navigation.Navigation where
+{-# LANGUAGE DuplicateRecordFields            #-}
+module Navigation.Navigation (
+      module Navigation.Navigation
+    , CommonProps.style, CommonProps.ref
+    
+) where
 
-import Control.Monad
-import           Data.Aeson                     ( FromJSON(..)
-                                                , ToJSON(..)
-                                                , (.:)
-                                                , (.=)
+import           Control.Monad
+import           Data.Aeson                     ( ToJSON(..)
                                                 , Object
                                                 )
 import           Data.Function
-import Data.JSString (unpack)
-import           Data.Map (Map,singleton,mapWithKey,toList)
-import           GHC.Generics                   ( Generic )
-import           GHCJS.Marshal                  
-import           GHCJS.Types                    
-import Data.Maybe
+import           Data.Map (Map,toList)
+import           Data.Maybe
+import           GHC.Generics                   ( Generic )                  
+import           GHCJS.Marshal                    
+import           GHCJS.Types
 import qualified JavaScript.Object as JSO
-import           Numeric.Natural
 import           Prelude                        ( String
-                                                , Double
                                                 , return
                                                 , fmap
                                                 , IO
@@ -35,39 +33,41 @@ import           Prelude                        ( String
                                                 , error
                                                 , (.)
                                                 , Show
-                                                , (<>)
-                                                , Bool
                                                 , Either(..)
                                                 , mempty
                                                 )                     
 import           React.Flux       hiding (on)
-import React.Flux.View
-import React.Flux.Internal
+import           React.Flux.Internal
 import           React.Flux.Rn.Properties
-import           React.Flux.Rn.Props.CommonProps
-                                                ( style )
-import qualified React.Flux.Rn.StyleProps.LayoutStyleProps
-                                               as LayoutStyleProps
-import           React.Flux.Rn.Types            ( Color(..)
-                                                , Inset(..)
-                                                , str)
-import           React.Flux.Rn.Views
-import           System.IO.Unsafe (unsafePerformIO)
-import Maps.Types
+import           React.Flux.Rn.Events (This)
+import           React.Flux.Rn.Types            ( str)
+import           React.Flux.View
+import           React.Flux.Rn.Props.CommonProps as CommonProps
+                                                ( style, ref )
 
 type Navigation = ReactViewRef Object
-type NavigationId = JSString
 
-data NavigationProps = NavigationProps {
+data DrawerNavigatorConfig = DrawerNavigatorConfig {
     initialRouteName :: String,
     contentComponent :: Maybe (View ())
 } deriving (Generic)
-instance ToJSVal NavigationProps where
-  toJSVal (NavigationProps initialRouteName contentComponent) = do
+instance ToJSVal DrawerNavigatorConfig where
+  toJSVal (DrawerNavigatorConfig initialRouteName contentComponent) = do
     o <- JSO.create
     s <- toJSVal initialRouteName
     JSO.setProp "initialRouteName" s o
     mapM_ (\x -> JSO.setProp "contentComponent" (jsval x) o) contentComponent
+    return $ jsval o
+
+data BottomTabNavigatorConfig = BottomTabNavigatorConfig {
+    initialRouteName :: String
+} deriving (Generic)
+instance ToJSVal BottomTabNavigatorConfig where
+  toJSVal (BottomTabNavigatorConfig initialRouteName) = do
+    o <- JSO.create
+    s <- toJSVal initialRouteName
+    JSO.setProp "initialRouteName" s o
+    --mapM_ (\x -> JSO.setProp "contentComponent" (jsval x) o) contentComponent
     return $ jsval o
 
 instance IsJSVal (View ())
@@ -80,22 +80,28 @@ instance ToJSVal DrawerAction where
   toJSVal CloseDrawer  = str "closeDrawer"
   toJSVal ToggleDrawer = str "toggleDrawer"
 
-createDrawerNavigator :: Map String (View ()) -> NavigationProps -> IO Navigation
+createDrawerNavigator :: [(String, Either (View ()) Navigation)] -> DrawerNavigatorConfig -> IO Navigation
 createDrawerNavigator pages p = do
     pp <- toJSVal p
     o <- JSO.create
-    mapM_ (\(k,v) -> JSO.setProp (toJSString k) (jsval v) o) $ toList pages
+    mapM_ (\(k,v) -> JSO.setProp (toJSString k) (either2jsval v) o) $ pages
     js_createDrawerNavigator o pp
+
+createBottomTabNavigator :: [(String, Either (View ()) Navigation)] -> BottomTabNavigatorConfig -> IO Navigation
+createBottomTabNavigator pages p = do
+    pp <- toJSVal p
+    o <- JSO.create
+    mapM_ (\(k,v) -> JSO.setProp (toJSString k) (either2jsval v) o) $ pages
+    js_createBottomTabNavigator o pp
+
+either2jsval :: Either (View ()) Navigation -> JSVal
+either2jsval (Left v)  = jsval v
+either2jsval (Right n) = jsval n
 
 createAppContainer :: Navigation -> [Props Navigation handler] -> IO (ReactElementM handler ())
 createAppContainer n p = do
     aa <- js_createAppContainer n
     return $ elementToM () $ ForeignElement (Right aa) (fmap props p) mempty
-
-getNavigation :: String -> IO Navigation
-getNavigation navigationId = do
-    ii <- toJSVal navigationId
-    js_getNavigation ii
 
 data NavigateProps = NavigateProps {
     routeName :: String,
@@ -110,23 +116,26 @@ instance ToJSVal NavigateProps where
 navigate :: NavigateProps -> IO ()
 navigate = js_navigate <=< toJSVal
 
-ref :: Has c "ref" => (NavigationId -> EventHandlerType handler) -> Props c handler
-ref f = prop_ $ CallbackPropertyWithSingleArgument "ref" $ \h -> do
-    ret <- js_ref h
-    return $ f ret
 
-drawerAction :: DrawerAction -> NavigationId -> IO ()
+
+drawerAction :: DrawerAction -> This Navigation -> IO ()
 drawerAction a n = do
     act <- toJSVal a
     js_drawerAction act n
 
 instance Has Navigation "ref"
 
+
+
 #ifdef __GHCJS__
  
 foreign import javascript unsafe 
     "navigation_createDrawerNavigator($1,$2)"
     js_createDrawerNavigator :: JSO.Object -> JSVal -> IO Navigation
+
+foreign import javascript unsafe 
+    "navigation_createBottomTabNavigator($1,$2)"
+    js_createBottomTabNavigator :: JSO.Object -> JSVal -> IO Navigation
 
 foreign import javascript unsafe
     "navigation_createAppContainer($1)"
@@ -138,20 +147,15 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe
     "window[$2].dispatch(navigation_DrawerActions[$1]())"
-    js_drawerAction :: JSVal -> NavigationId -> IO ()
-
-foreign import javascript unsafe
-    "window[$1]"
-    js_getNavigation :: JSVal -> IO Navigation
-
-foreign import javascript unsafe
-    "$r = ''+Math.random(); window[$r] = $1"
-    js_ref :: HandlerArg -> IO NavigationId
+    js_drawerAction :: JSVal -> This Navigation -> IO ()
 
 #else
 
 js_createDrawerNavigator :: JSO.Object -> JSVal -> IO Navigation
 js_createDrawerNavigator _ = error "js_createDrawerNavigator only works with GHCJS"
+
+js_createBottomTabNavigator :: JSO.Object -> JSVal -> IO Navigation
+js_createBottomTabNavigator _ = error "js_createBottomTabNavigator only works with GHCJS"
 
 js_createAppContainer :: Navigation -> IO (ReactViewRef Object)
 js_createAppContainer _ = error "js_createAppContainer only works with GHCJS"
@@ -159,14 +163,8 @@ js_createAppContainer _ = error "js_createAppContainer only works with GHCJS"
 js_navigate :: JSVal -> IO ()
 js_navigate _ = error "js_navigate only works with GHCJS"
 
-js_drawerAction :: JSVal -> NavigationId -> IO ()
+js_drawerAction :: JSVal -> This Navigation -> IO ()
 js_drawerAction _ = error "js_drawerAction only works with GHCJS"
-
-js_getNavigation :: JSVal -> IO Navigation
-js_getNavigation _ = error "js_getNavigation only works with GHCJS"
-
-js_ref :: HandlerArg -> IO NavigationId
-js_ref _ = error "js_ref only works with GHCJS"
 
 #endif
 

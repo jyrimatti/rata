@@ -30,9 +30,9 @@ import           React.Flux.Rn.Views
 import           Store
 
 
-menu = mkControllerView @'[StoreArg AppState] "menu" $ \(AppState _ layerStates _ zoomLevel _ _) () ->
+menu = mkControllerView @'[StoreArg AppState] "menu" $ \state () ->
     scrollView [] $
-        mapM_ (\layer -> layerButton (zoomLevel, layer, layerStates Map.! layer)) allLayers
+        mapM_ (\layer -> layerButton (zoomLevel state, layer, (layerStates state) Map.! layer)) allLayers
 
 layerButton = mkView "layerButton" $ \(zoomLevel, layer, state) ->
     view [style []] $
@@ -46,6 +46,4 @@ disabledForLayer zoomLevel (Layer _ minZoom _ maxZoom) =
     zoomLevel < minZoom || zoomLevel > maxZoom
 
 buttonColor LayerHidden    = Rgba 42 42 42 42
-buttonColor WMTS           = Rgb 0 255 0
-buttonColor Vector         = Rgb 0 0 255
-buttonColor VectorFetching = Rgb 0 0 128
+buttonColor LayerShown     = Rgb 0 255 0

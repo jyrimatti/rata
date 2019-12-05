@@ -1,3 +1,4 @@
+{-# LANGUAGE EmptyDataDeriving #-}
 {-# LANGUAGE CPP                   #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
@@ -8,6 +9,7 @@
 {-# LANGUAGE RankNTypes            #-}
 module Maps.MapView
   ( module Maps.MapView
+  , CommonProps.style, CommonProps.ref
   , Region(..)
   , Camera(Camera)
   , Inset(Inset)
@@ -18,65 +20,43 @@ module Maps.MapView
   )
 where
 
-import           Control.Applicative ((<$>), (<*>))
-import           Data.Aeson                     ( FromJSON(..)
-                                                , ToJSON(..)
-                                                , (.:)
-                                                , (.=)
-                                                )
 import           Data.Maybe (fromJust)
-import           GHC.Generics                   ( Generic )
 
-import           GHCJS.Marshal                  ( FromJSVal(..)
-                                                , ToJSVal(..)
+import           GHCJS.Marshal                  ( ToJSVal(..)
                                                 )
-import           GHCJS.Types                    ( JSString
-                                                , JSVal
-                                                , IsJSVal
-                                                , jsval
+import           GHCJS.Types                    ( JSVal
                                                 )
 import           Maps.Types                     ( Region(..)
                                                 , Camera(..)
                                                 , LatLng(..)
-                                                , Location(..)
                                                 , Point(..)
-                                                , Frame(..)
                                                 , MapType(..)
-                                                , Inset(..)
-                                                , KmlMarker(..)
-                                                , KmlContainer(..)
-                                                , IndoorBuilding(..)
-                                                , IndoorLevel(..)
+                                                , Inset
                                                 , PaddingAdjustmentBehavior(..)
                                                 )
 import           Numeric.Natural
-import           Prelude                        (($),  String
-                                                , Double
+import           Prelude                        (String
                                                 , IO
-                                                , error, fmap
+                                                , fmap
                                                 , (.)
-                                                , Show
-                                                , (<>)
-                                                , Bool
-                                                )
+                                                , Bool)
 import           React.Flux hiding (style)
-import           React.Flux.Internal
-import           React.Flux.Rn.Events     (EventHandlerType, on0, on1, on1t, invoke1, This(..))
+import           React.Flux.Rn.Events     (EventHandlerType, invoke1, This(..), on1)
 import           React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop
                                                 , props
                                                 )
-import           React.Flux.Rn.Props.CommonProps
-                                                ( style )
+import           React.Flux.Rn.Props.CommonProps as CommonProps
+                                                ( style, ref )
 import qualified React.Flux.Rn.StyleProps.LayoutStyleProps
                                                as LayoutStyleProps
 import           React.Flux.Rn.Types            ( Color(..)
                                                 , Inset(..)
                                                 )
-import           React.Flux.View
 
 data MapView
+
 -- needs dimensions to show up
 mapView
   :: [Props MapView handler]
@@ -220,8 +200,8 @@ compassOffset = prop "compassOffset"
 
 -- Events
 
-onRegionChangeComplete :: Has c "onRegionChangeComplete" => (This c -> Region -> EventHandlerType handler) -> Props c handler
-onRegionChangeComplete f = on1t "onRegionChangeComplete" f
+onRegionChangeComplete :: Has c "onRegionChangeComplete" => (Region -> EventHandlerType handler) -> Props c handler
+onRegionChangeComplete = on1 "onRegionChangeComplete"
 
 
 -- Methods
@@ -229,7 +209,9 @@ onRegionChangeComplete f = on1t "onRegionChangeComplete" f
 pointForCoordinate :: This MapView -> LatLng -> IO Point
 pointForCoordinate this coordinate = do
   b <- toJSVal coordinate
-  fmap fromJust (invoke1 this "pointForCoordinate" b)
+  invoke1 this "pointForCoordinate" b
+
+instance Has MapView "ref"
 
 instance Has MapView "style"
 instance Has MapView "provider"

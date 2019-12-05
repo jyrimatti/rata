@@ -5,19 +5,18 @@
 
 import Data.Aeson                     ( decode, Value)
 import Data.ByteString.Lazy.Char8     ( pack )
-import Data.Map (singleton)                     
+import Data.Map (singleton, fromList)                     
 import Data.Maybe
 import Dispatcher
 import GHCJS.Marshal                  ( ToJSVal(..) )
 import Menu
 import Navigation.Navigation
-import Prelude                        ( IO , ($), (.) )
+import Prelude                        ( IO , ($), (.), Either(..), Bool(..) )
 
 import React.Flux
 import React.Flux.Ajax                ( initAjax )
 import React.Flux.Rn.App              ( registerApp )
 import Store
-import Store                          ( appStore )
 import Views                          ( app )
 
 cmsJson :: Value
@@ -39,12 +38,16 @@ main = do
   registerInitialStore appStore
 
   let mainView = app cms
-  
+
   -- create layer menu
-  navigation <- createDrawerNavigator (singleton "main" mainView) $ NavigationProps "main" $ Just menu
+  navigationMap     <- createDrawerNavigator [("main", Left $ mainView False)] $ DrawerNavigatorConfig "main" (Just menu)
+  navigationDiagram <- createDrawerNavigator [("main", Left $ mainView True)] $ DrawerNavigatorConfig "main" (Just menu)
+
+  -- create bottom tabs
+  tabs <- createBottomTabNavigator [("map", Right navigationMap), ("diagram", Right navigationDiagram)] $ BottomTabNavigatorConfig "map"
 
   -- initialize layer menu, and save reference for future use
-  ac <- createAppContainer navigation [ ref (dispatch . SaveLayerMenu) ]
+  ac <- createAppContainer tabs [ ref (dispatch . SaveLayerMenu) ]
 
   -- wrap the app to a contoller-view, and register
   registerApp "rnproject" $ mkControllerView @'[] "wrapper" $ \() -> ac
