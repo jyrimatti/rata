@@ -24,7 +24,9 @@ executable rata
                        utf8-string,
                        ghcjs-fetch,
                        geojson,
-                       lens
+                       lens,
+                       regex-tdfa,
+                       regex-tdfa-text
   if impl(ghcjs)
       build-depends: ghcjs-base
   else
@@ -39,6 +41,7 @@ executable rata
                        Dispatcher,
                        Transform,
                        Navigation.Navigation,
+                       Maps.Callout,
                        Maps.MapView,
                        Maps.Marker,
                        Maps.Circle,

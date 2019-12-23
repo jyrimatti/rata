@@ -10,6 +10,12 @@ module.exports = {
                 root: ['.'],
             },
         ],
+        [
+            require.resolve("babel-plugin-inline-import"),
+            {
+                "extensions": [".svg"]
+            }
+        ]
     ],
     ignore: ["**/all.js", "./src/all.js", "all.js"],
     exclude: ["**/all.js", "./src/all.js", "all.js"]

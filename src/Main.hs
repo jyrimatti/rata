@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE NamedFieldPuns             #-}
 {-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeApplications           #-}
@@ -11,7 +12,9 @@ import Dispatcher
 import GHCJS.Marshal                  ( ToJSVal(..) )
 import Menu
 import Navigation.Navigation
-import Prelude                        ( IO , ($), (.), Either(..), Bool(..) )
+import Navigation.BottomTabNavigator
+import Navigation.DrawerNavigator
+import Prelude                        ( IO , ($), (.), Either(..), Bool(..) , putStrLn)
 
 import React.Flux
 import React.Flux.Ajax                ( initAjax )
@@ -40,14 +43,26 @@ main = do
   let mainView = app cms
 
   -- create layer menu
-  navigationMap     <- createDrawerNavigator [("main", Left $ mainView False)] $ DrawerNavigatorConfig "main" (Just menu)
-  navigationDiagram <- createDrawerNavigator [("main", Left $ mainView True)] $ DrawerNavigatorConfig "main" (Just menu)
+  navigationMap     <- createDrawerNavigator [("main", Left $ mainView False)] $ (defaultDrawerNavigatorConfig "main") {
+    contentComponent = Just menu,
+    navigationOptionsDrawer = Just $ BottomTabNavigationOptions $ BottomTabNavigatorNavigationOptions {
+      tabBarOnPress = \_ -> dispatch (MapChanged Map)
+    }
+  }
+  navigationDiagram <- createDrawerNavigator [("main", Left $ mainView True)] $ (defaultDrawerNavigatorConfig "main") {
+    contentComponent = Just menu,
+    navigationOptionsDrawer = Just $ BottomTabNavigationOptions $ BottomTabNavigatorNavigationOptions {
+      tabBarOnPress = \_ -> dispatch (MapChanged Diagram)
+    }
+  }
 
   -- create bottom tabs
-  tabs <- createBottomTabNavigator [("map", Right navigationMap), ("diagram", Right navigationDiagram)] $ BottomTabNavigatorConfig "map"
+  tabs <- createBottomTabNavigator [("map", Right navigationMap), ("diagram", Right navigationDiagram)] $ defaultBottomTabNavigatorConfig "map"
 
   -- initialize layer menu, and save reference for future use
-  ac <- createAppContainer tabs [ ref (dispatch . SaveLayerMenu) ]
+  ac <- createAppContainer tabs [ ref (dispatch . SaveLayerMenu) ] 
+
+  putStrLn "Registering Rata..."
 
   -- wrap the app to a contoller-view, and register
   registerApp "rnproject" $ mkControllerView @'[] "wrapper" $ \() -> ac

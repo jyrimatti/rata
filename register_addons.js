@@ -4,7 +4,7 @@ import { createAppContainer, withNavigation, NavigationActions, NavigationContex
 import { createDrawerNavigator, DrawerActions } from 'react-navigation-drawer';
 import { createBottomTabNavigator, TabActions } from 'react-navigation-tabs';
 import Screens from 'react-native-screens';
-import { SvgUri } from 'react-native-svg';
+import { SvgUri, SvgXml } from 'react-native-svg';
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -32,6 +32,7 @@ module.exports = (function() {
   window['MapView.Heatmap'] = MapView.Heatmap;
   window['MapView.Geojson'] = MapView.Geojson;
   window['MapView.UrlTile'] = MapView.UrlTile;
+  window['MapView.LocalTile'] = MapView.LocalTile;
 
   window['navigation_createAppContainer'] = createAppContainer;
   window['navigation_createDrawerNavigator'] = createDrawerNavigator;
@@ -45,6 +46,7 @@ module.exports = (function() {
   window['Screens'] = Screens;
 
   window['Svg.SvgUri'] = SvgUri;
+  window['Svg.SvgXml'] = SvgXml;
 
   window['Icon.AntDesign'] = AntDesign;
   window['Icon.Entypo'] = Entypo;

@@ -13,25 +13,26 @@
 {-# LANGUAGE TypeFamilies                 #-}
 module Store where
 
+import           Control.Concurrent (forkIO)
 import           Control.DeepSeq
 import           Control.Exception
-import           Control.Monad (forM_,mapM_)
+import           Control.Monad (forM_)
 import qualified Data.Aeson                    as A
-import           Data.Foldable                  ( toList, elem )
+import           Data.Aeson.Types (parseEither)
+import           Data.Foldable                  ( toList, elem , traverse_)
 import           Data.Geospatial
 import           Data.JSString                  ( pack )
 import qualified Data.Map                      as Map
 import           Data.Maybe
-import           Data.Sequence                 as Seq hiding (elem,filter)
+import           Data.Sequence                 as Seq hiding (filter)
 import qualified Data.Text as T
 import           Data.Typeable                  ( Typeable )
 import           GHC.Generics                   ( Generic )
 import           GHCJS.Fetch
-import           Infra
 import           Layer
 import           LayerTypes
-import           Maps.MapView (MapView)
-import           Maps.Types (Region(..))
+import           Maps.Types (Region(..),LatLng(..))
+import           Navigation.DrawerNavigator
 import           Navigation.Navigation
 import           Numeric.Natural
 import           Prelude                        ((/=),  Show
@@ -58,28 +59,29 @@ import           Prelude                        ((/=),  Show
                                                 , (==)
                                                 , (&&)
                                                 )
-import           React.Flux                     ( StoreData(..), action, SomeStoreAction, HasField(..) )
-import           React.Flux.Ajax                ( jsonAjax, RequestTimeout(..) )
-import           React.Flux.Rn.APIs             ( log )
+import           React.Flux                     ( StoreData(..), action, SomeStoreAction, HasField(..), executeAction )
 import           React.Flux.Rn.Events            (This(..))
+import           React.Flux.Rn.Util             ( log, logJSVal )
 import           Transform
-import qualified Maps.MapView as MapView
-import Maps.Types (LatLng(..))
 
 hasVectorData :: AppState -> Bool -> Layer -> Bool
 hasVectorData st diagram layer = Map.member layer (if diagram then layerDataDiagram st else layerDataMap st)
 
+data MapType = Map | Diagram
+    deriving (Show, Typeable, Generic, NFData, Eq)
+
 data AppState = AppState {
     layerStates :: Map.Map Layer LayerState,
-    layerDataMap :: Map.Map Layer [Feature],
-    layerDataDiagram :: Map.Map Layer [Feature],
+    layerDataMap :: Map.Map Layer [Feature FeatureProperties],
+    layerDataDiagram :: Map.Map Layer [Feature FeatureProperties],
     zoomLevel :: Natural,
     viewport :: Region,
     tileCacheMap :: Map.Map Layer [Tile],
     tileCacheDiagram :: Map.Map Layer [Tile],
     layerMenu :: This Navigation,
     map :: This MapView,
-    showDetails :: Maybe Oid
+    showDetails :: Maybe Oid,
+    mapType :: MapType
 } deriving (Show, Typeable, Eq)
 
 appStore :: AppState
@@ -93,12 +95,13 @@ appStore = AppState (Map.fromList $ fmap (, LayerHidden) allLayers)
                     (This "")
                     (This "")
                     Nothing
+                    Map
 
 instance HasField "layerStates" AppState (Map.Map Layer LayerState) where
     getField = layerStates
-instance HasField "layerDataMap" AppState (Map.Map Layer [Feature]) where
+instance HasField "layerDataMap" AppState (Map.Map Layer [Feature FeatureProperties]) where
     getField = layerDataMap
-instance HasField "layerDataDiagram" AppState (Map.Map Layer [Feature]) where
+instance HasField "layerDataDiagram" AppState (Map.Map Layer [Feature FeatureProperties]) where
     getField = layerDataDiagram
 instance HasField "zoomLevel" AppState Natural where
     getField = zoomLevel
@@ -109,38 +112,39 @@ data AppAction = SaveLayerMenu (This Navigation)
                | SaveMapView (This MapView)
                | ChangeLayerState Layer
                | VectorFetchFailed Layer T.Text T.Text
-               | VectorFetchSucceeded Bool Layer Tile (Seq (GeoFeature A.Value))
+               | VectorFetchSucceeded MapType Layer Tile (Seq (GeoFeature FeatureProperties))
                | RegionChangeComplete Region
                | ToggleLayerMenu
                | ObjectTapped Oid
+               | MapChanged MapType
     deriving (Show, Typeable, Generic, NFData, Eq)
 
-showAppAction (VectorFetchSucceeded diagram layer tile _) = show $ VectorFetchSucceeded diagram layer tile Seq.empty
+showAppAction (VectorFetchSucceeded maptype layer tile _) = show $ VectorFetchSucceeded maptype layer tile Seq.empty
 showAppAction x = show x
 
-toFeature :: GeoFeature a -> Feature
-toFeature (GeoFeature _ (Collection geom) _ oid) = Feature (toOid oid) $ toList geom
-toFeature (GeoFeature _             geom  _ oid) = Feature (toOid oid) [geom]
+toFeature :: GeoFeature FeatureProperties -> Feature FeatureProperties
+toFeature (GeoFeature _ geom  props _) = Feature (toOid props) props geom
 
-toOid :: Maybe FeatureID -> Maybe Oid
-toOid Nothing                    = Nothing
-toOid (Just (FeatureIDText str)) = Just $ Oid $ T.unpack str
-toOid (Just (FeatureIDNumber i)) = Nothing
+disp :: AppAction -> SomeStoreAction
+disp a = action @AppState a
 
-disp :: AppAction -> [SomeStoreAction]
-disp a = [action @AppState a]
+fetchVectorLayers :: [Tile] -> MapType -> Natural -> Region -> Layer -> IO ()
+fetchVectorLayers tileCache maptype level region layer = traverse_ (\tile -> fetchVectorLayer maptype tile layer) $ filter (not . (`elem` tileCache)) $ region2Tiles level region
 
-fetchVectorLayers :: [Tile] -> Bool -> Natural -> Region -> Layer -> IO ()
-fetchVectorLayers tileCache diagram level region layer = mapM_ (\tile -> fetchVectorLayer diagram tile layer) $ filter (not . (`elem` tileCache)) $ region2Tiles level region
-
-fetchVectorLayer :: Bool -> Tile -> Layer -> IO ()
-fetchVectorLayer diagram tile layer = let
-    url = T.pack $ vectorUrl apiBase (let LayerType x = layerType layer in layerPath x) tile diagram
+fetchVectorLayer :: MapType -> Tile -> Layer -> IO ()
+fetchVectorLayer maptype tile layer = let
+    url = vectorUrl (layerBase layer) (layerPath layer) tile (maptype == Diagram)
+    doFetch = do
+        log . pack $ "Fetching vector data from: " <> url
+        resp <- fetch (Request (pack url) defaultRequestOptions)
+        json <- responseJSON resp
+        executeAction $ case parseEither A.parseJSON json of
+            Left msg                                -> disp $ VectorFetchFailed layer (T.pack url) (T.pack msg)
+            Right (GeoFeatureCollection _ features) -> disp $ VectorFetchSucceeded maptype layer tile features
   in do
-    log . pack $ "Fetching vector data from: " <> show url
-    jsonAjax (TimeoutMilliseconds 180000) "GET" url [] () $ \case
-        (_, Left msg)                                -> return $ disp $ VectorFetchFailed layer url msg
-        (_, Right (GeoFeatureCollection _ features)) -> return $ disp $ VectorFetchSucceeded diagram layer tile features
+    _ <- forkIO $ catch doFetch $ \(JSPromiseException e) -> do
+        logJSVal (pack $ "Got an exception while fetching url " <> url <> ": ") e
+    return ()
 
 initialReg :: Region        
 initialReg = Region 61.4858254 24.0470175 (Just 0.5) (Just 0.5)
@@ -158,52 +162,34 @@ instance StoreData AppState where
             return st
 
 doTransform :: AppAction -> AppState -> IO AppState
-doTransform action st@(AppState layerStates layerDataMap layerDataDiagram zoomLevel region tileCacheMap tileCacheDiagram layerMenu _ showDetails) = case action of
+doTransform action st@(AppState layerStates layerDataMap layerDataDiagram zoomLevel region tileCacheMap tileCacheDiagram layerMenu _ showDetails maptype) =
+  let tileCacheFor Map     = tileCacheMap
+      tileCacheFor Diagram = tileCacheDiagram
+  in case action of
     ChangeLayerState layer -> do
         let state = layerStates Map.! layer
         case state of
             LayerHidden | vectorVisible zoomLevel layer LayerShown -> do
                 log . pack $ "retrieving vector data for layer " <> show layer <> " on level " <> show zoomLevel <> " for region " <> show region
-                -- TODO: don't fetch both presentations
-                fetchVectorLayers (Map.findWithDefault [] layer tileCacheDiagram) True zoomLevel region layer
-                fetchVectorLayers (Map.findWithDefault [] layer tileCacheMap) False zoomLevel region layer
+                fetchVectorLayers (Map.findWithDefault [] layer $ tileCacheFor maptype) maptype zoomLevel region layer
                 return $ st { layerStates = Map.insert layer LayerShown layerStates }
             LayerHidden | wmtsVisible zoomLevel layer state    -> return $ st { layerStates = Map.insert layer LayerShown layerStates }
             LayerHidden                                        -> return   st
             _                                                  -> return $ st { layerStates = Map.insert layer LayerHidden layerStates }
 
-    {-ChangeLayerState layer | layerStates Map.! layer == Vector -> do
-        log . pack $ "hiding layer " <> show layer
-        return $ st { layerStates = Map.insert layer LayerHidden layerStates }
-
-    ChangeLayerState layer | layerStates Map.! layer == WMTS && hasVectorData st layer -> do
-        log . pack $ "already got layer " <> show layer
-        return st { layerStates = Map.insert layer Vector layerStates }
-
-    ChangeLayerState layer | layerStates Map.! layer == WMTS -> do
-        log . pack $ "retrieving vector data for layer " <> show layer <> " on level " <> show zoomLevel <> " for region " <> show region
-        fetchVectorLayers (Map.findWithDefault [] layer tileCache) zoomLevel region layer
-        return st { layerStates = Map.insert layer VectorFetching layerStates }
-
-    ChangeLayerState layer -> do
-        log . pack $ "Showing WMTS layer " <> show layer
-        return st { layerStates = Map.insert layer WMTS layerStates }-}
-
     VectorFetchFailed layer _ _ ->
         return st { layerStates = Map.insert layer LayerHidden layerStates }
 
-    VectorFetchSucceeded diagram layer tile features ->
-        return st { layerDataMap     = if diagram     then layerDataMap     else Map.adjust (\old -> old <> fmap toFeature (toList features)) layer layerDataMap
-                  , layerDataDiagram = if not diagram then layerDataDiagram else Map.adjust (\old -> old <> fmap toFeature (toList features)) layer layerDataDiagram
-                  , tileCacheMap     = if diagram     then tileCacheMap     else Map.adjust (tile :) layer tileCacheMap
-                  , tileCacheDiagram = if not diagram then tileCacheDiagram else Map.adjust (tile :) layer tileCacheDiagram
+    VectorFetchSucceeded maptype layer tile features ->
+        return st { layerDataMap     = if maptype == Diagram then layerDataMap     else Map.adjust (\old -> old <> fmap toFeature (toList features)) layer layerDataMap
+                  , layerDataDiagram = if maptype == Map     then layerDataDiagram else Map.adjust (\old -> old <> fmap toFeature (toList features)) layer layerDataDiagram
+                  , tileCacheMap     = if maptype == Diagram then tileCacheMap     else Map.adjust (tile :) layer tileCacheMap
+                  , tileCacheDiagram = if maptype == Map     then tileCacheDiagram else Map.adjust (tile :) layer tileCacheDiagram
                   }
 
     RegionChangeComplete newViewport -> do
         let keys = Map.keys . Map.filterWithKey (\layer state -> state /= LayerHidden && vectorVisible zoomLevel layer state) $ layerStates
-        -- TODO: don't fetch both presentations
-        forM_ keys (\layer -> fetchVectorLayers (Map.findWithDefault [] layer tileCacheDiagram) True zoomLevel newViewport layer)
-        forM_ keys (\layer -> fetchVectorLayers (Map.findWithDefault [] layer tileCacheMap) False zoomLevel newViewport layer)
+        forM_ keys (\layer -> fetchVectorLayers (Map.findWithDefault [] layer $ tileCacheFor maptype) maptype zoomLevel newViewport layer)
         return st { viewport = newViewport }
 
     ToggleLayerMenu -> do
@@ -222,3 +208,8 @@ doTransform action st@(AppState layerStates layerDataMap layerDataDiagram zoomLe
              old@(Just other) | other == oid -> old
              _                               -> Just oid
         return st { showDetails = showDetailsNew }
+
+    MapChanged maptype -> do
+        let keys = Map.keys . Map.filterWithKey (\layer state -> state /= LayerHidden && vectorVisible zoomLevel layer state) $ layerStates
+        forM_ keys (\layer -> fetchVectorLayers (Map.findWithDefault [] layer $ tileCacheFor maptype) maptype zoomLevel region layer)
+        return st { mapType = maptype }

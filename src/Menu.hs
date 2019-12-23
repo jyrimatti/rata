@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE FlexibleInstances         #-}
 {-# LANGUAGE MultiParamTypeClasses     #-}
+{-# LANGUAGE NamedFieldPuns            #-}
 {-# LANGUAGE NoImplicitPrelude         #-}
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE PolyKinds                 #-}
@@ -16,33 +17,39 @@ module Menu where
 import qualified Data.Map as Map
 
 import           Dispatcher
-import           Infra
 
 import           Layer
+import           LayerTypes
 
 import           Prelude                             (mapM_, ($), (<), (>),
                                                       (||))
 import           React.Flux.Rn.Components.Button
+import           React.Flux.Rn.Components.TouchableHighlight as TH
+import           React.Flux.Rn.Components.Text as Text
 
 import           React.Flux.Rn.Components.ScrollView
 import           React.Flux.Rn.Components.View
 import           React.Flux.Rn.Views
 import           Store
-
+import           React.Flux                                        (elemShow,
+                                                                    elemString)
 
 menu = mkControllerView @'[StoreArg AppState] "menu" $ \state () ->
-    scrollView [] $
+    scrollView [ style [ marginTop (Pt 20) ] ] $
         mapM_ (\layer -> layerButton (zoomLevel state, layer, (layerStates state) Map.! layer)) allLayers
 
 layerButton = mkView "layerButton" $ \(zoomLevel, layer, state) ->
-    view [style []] $
-        button [ title (layerName layer state)
-               , disabled $ disabledForLayer zoomLevel layer
-               , onPress (dispatch $ ChangeLayerState layer)
-               , color $ buttonColor state
-               ]
+    view [style [ alignContent FlexStart ]] $
+        touchableHighlight [ TH.onPress (dispatch $ ChangeLayerState layer)
+                           , TH.disabled $ disabledForLayer zoomLevel layer
+                                ] $
+            text [ style [ Text.color $ buttonColor state
+                         , fontSize 12
+                         , paddingTop (Pt 3)
+                         ] ] $
+                elemString $ layerName layer state
 
-disabledForLayer zoomLevel (Layer _ minZoom _ maxZoom) =
+disabledForLayer zoomLevel Layer{visibility = Visibility {minZoom, maxZoom}} =
     zoomLevel < minZoom || zoomLevel > maxZoom
 
 buttonColor LayerHidden    = Rgba 42 42 42 42

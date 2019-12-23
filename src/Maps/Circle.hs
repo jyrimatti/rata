@@ -9,6 +9,10 @@
 module Maps.Circle
   ( module Maps.Circle
   , LatLng(..)
+  , Color(..)
+  , CommonProps.strokeWidth
+  , CommonProps.strokeColor
+  , CommonProps.fillColor
   )
 where
 import Numeric.Natural
@@ -25,7 +29,9 @@ import           React.Flux.Rn.Properties       ( Has
                                                 , prop
                                                 , props
                                                 )
+import           React.Flux.Rn.Types (Color(..))
 import           Maps.Types
+import           Maps.CommonProps as CommonProps
 
 data Circle
 circle :: [Props Circle handler] -> ReactElementM handler ()
@@ -39,3 +45,6 @@ radius = prop "radius"
 
 instance Has Circle "center"
 instance Has Circle "radius"
+instance Has Circle "strokeWidth"
+instance Has Circle "strokeColor"
+instance Has Circle "fillColor"

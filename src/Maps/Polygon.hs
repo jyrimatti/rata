@@ -8,7 +8,12 @@
 
 module Maps.Polygon
   ( module Maps.Polygon
-  , CommonProps.coordinates, CommonProps.strokeWidth, CommonProps.tappable, CommonProps.onPress
+  , CommonProps.coordinates
+  , CommonProps.strokeWidth
+  , CommonProps.strokeColor
+  , CommonProps.fillColor
+  , CommonProps.tappable
+  , CommonProps.onPress
   , LatLng(..)
   )
 where
@@ -38,6 +43,8 @@ polygon = ($ mempty) . foreign_ "MapView.Polygon" . fmap props
 instance Has Polygon "tappable"
 instance Has Polygon "coordinates"
 instance Has Polygon "strokeWidth"
+instance Has Polygon "strokeColor"
+instance Has Polygon "fillColor"
 
 
 -- Events:

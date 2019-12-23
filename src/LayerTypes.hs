@@ -1,57 +1,38 @@
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric  #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveAnyClass        #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE KindSignatures        #-}
+{-# LANGUAGE ExistentialQuantification        #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE QuasiQuotes                      #-}
 module LayerTypes where
 
+import Data.Aeson
 import           Control.DeepSeq
 import           Data.Typeable
 import           GHC.Generics                   ( Generic )
-import           Data.Geospatial
+import Data.Geospatial
+import Numeric.Natural
 
-newtype Oid = Oid String
-  deriving (Show, Typeable, Generic, NFData, Eq, Ord)
 
-data Feature = Feature (Maybe Oid) [GeospatialGeometry]
+data LayerSource = LayerSource {
+  path :: String,
+  typeNames :: Maybe String,
+  propertyName :: [String]
+} deriving (Typeable, Generic, NFData, Eq, Ord)
+
+data Visibility = Visibility {
+  minZoom   :: Natural,
+  limitZoom :: Natural,
+  maxZoom   :: Natural
+} deriving (Typeable, Generic, NFData, Eq, Ord)
+
+data LayerState = LayerHidden | LayerShown
   deriving (Show, Typeable, Generic, NFData, Eq)
 
-data Infra = TransportationPlanningAreas
-           | SpeedRestrictionAreas
-           | AccountingRailwaySections
-           | Railways
-           | Milestones
-           | PositioningMarkers
-           | Tracks
-           | TimetableLocations
-           | PartsOfStation
-           | StationIntervals
-           | Stations
-           | Stops
-           | LineSwitches
-           | TrackCircuits
-           | AxleCountingSections
-           | AudioFrequencyTrackCircuits
-           | LevelCrossings
-           | Bridges
-           | Tunnels
-           | Platforms
-           | Balises
-           | Signals
-           | Buffers
-           | Switches
-           | Derailers
-           | AxleCounters
-           | ElectrificationEnds
-           | RailInsulations
-           | GroupingInsulators
-           | StopBoards
-           | StationBoundaryMarks
-           | PantographMonitoringCameras
-           | RFIDReaders
-           | HotboxDetectors
-           | WheelForceIndicators
-           | ElectrificationGroups
-           | SeparationSections
-           | SeparationFields
-  deriving (Show, Typeable, Generic, NFData, Eq, Ord)
+data Oid = Oid { getOid :: String }
+  deriving (FromJSON, Show, Typeable, Generic, NFData, Eq, Ord)
 
-data LayerType = LayerType Infra
-  deriving (Show, Typeable, Generic, NFData, Eq, Ord)
+data Feature props = Feature (Maybe Oid) props GeospatialGeometry
+  deriving (Show, Typeable, Generic, NFData, Eq)

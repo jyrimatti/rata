@@ -1,9 +1,9 @@
 {
     "projectName": "rnproject",
+    "workspaceID": "rnv",
     "paths": {
-        "globalConfigDir": "~/.rnv",
         "appConfigsDir": "./appConfigs",
-        "platformTemplatesDir": "RNV_HOME/platformTemplates",
+        "platformTemplatesDir": "$RNV_HOME/platformTemplates",
         "entryDir": "./",
         "platformAssetsDir": "./platformAssets",
         "platformBuildsDir": "./platformBuilds",
@@ -13,26 +13,26 @@
         "title": "Rata",
         "id": "net.lahteenmaki.rata",
         "supportedPlatforms": [
-            "ios",
             "android",
             "androidtv",
             "androidwear",
-            "web",
+            "firefoxos",
+            "firefoxtv",
+            "ios",
+            "kaios",
+            "macos",
             "tizen",
             "tizenmobile",
-            "tvos",
-            "webos",
-            "macos",
-            "windows",
             "tizenwatch",
-            "kaios",
-            "firefoxos",
-            "firefoxtv"
+            "tvos",
+            "web",
+            "webos",
+            "windows"
         ]
     },
     "templates": {
         "renative-template-blank": {
-            "version": "0.27.0-alpha.5"
+            "version": "0.28.11"
         }
     },
     "currentTemplate": "renative-template-blank",
@@ -41,16 +41,15 @@
         "react": "source:rnv",
         "react-art": "source:rnv",
         "react-dom": "source:rnv",
-        "react-native": { "version": "0.59.10" },
+        "react-native": { "version": "0.61.5" },
         "react-native-web": "source:rnv",
         "react-native-web-image-loader": "source:rnv",
         "react-native-gesture-handler": "source:rnv",
         "react-navigation": "source:rnv",
         "react-navigation-tabs": "source:rnv",
         "react-native-reanimated": "source:rnv",
-        "react-native-vector-icons": "source:rnv",
         "react-native-maps": {
-            "version": "0.25.0",
+            "version": "0.26.1",
             "ios": {
                 "podName": "react-native-maps"
             },
@@ -70,10 +69,9 @@
                 "react-native-web-maps": "0.2.0"
             }
         },
-        "react-native-screens": "source:rnv",
         "react-native-svg": {
             "name": "react-native-svg",
-            "version": "9.4.0",
+            "version": "9.13.3",
             "ios": {
                 "podName": "RNSVG"
             },
@@ -96,9 +94,12 @@
                 }
             },
             "npm": {
-                "react-native-svg-web": "1.0.1"
+                "react-native-svg-web": "1.0.1",
+                "react-native-svg-transformer": "0.14.3",
+                "babel-plugin-inline-import": "3.0.0"
             }
-        }
+        },
+        "react-native-vector-icons": "source:rnv"
     },
     "permissions": {
         "ios": {},
@@ -156,13 +157,6 @@
                         "android:usesCleartextTraffic": true,
                         "tools:targetApi": 28
                     }
-                ]
-            }
-        },
-        "web": {
-            "webpackConfig": {
-                "customScripts": [
-                    "https://maps.googleapis.com/maps/api/js?key=AIzaSyAdZcPjDibD3Z_WtymQ3x-gSzfE1zfi7WY"
                 ]
             }
         }

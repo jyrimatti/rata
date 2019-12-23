@@ -21,7 +21,7 @@ import Prelude                        (fmap
 import React.Flux                     ( foreign_
                                                 , ReactElementM
                                                 )
-import React.Flux.Rn.Events     (EventHandlerType, invoke1, This(..), on1)
+import React.Flux.Rn.Events     (EventHandlerType, invoke1, This(..), on1, on0)
 import React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop

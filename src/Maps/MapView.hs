@@ -1,5 +1,4 @@
 {-# LANGUAGE EmptyDataDeriving #-}
-{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
@@ -41,7 +40,7 @@ import           Prelude                        (String
                                                 , (.)
                                                 , Bool)
 import           React.Flux hiding (style)
-import           React.Flux.Rn.Events     (EventHandlerType, invoke1, This(..), on1)
+import           React.Flux.Rn.Events     (EventHandlerType, invoke1, This(..), on1, on0)
 import           React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop
@@ -203,6 +202,8 @@ compassOffset = prop "compassOffset"
 onRegionChangeComplete :: Has c "onRegionChangeComplete" => (Region -> EventHandlerType handler) -> Props c handler
 onRegionChangeComplete = on1 "onRegionChangeComplete"
 
+onMarkerPress :: Has c "onMarkerPress" => EventHandlerType handler -> Props c handler
+onMarkerPress = on0 "onMarkerPress"
 
 -- Methods
 
@@ -254,6 +255,7 @@ instance Has MapView "kmlSrc"
 instance Has MapView "compassOffset"
 
 instance Has MapView "onRegionChangeComplete"
+instance Has MapView "onMarkerPress"
 
 instance Has MapView "width"
 instance Has MapView "height"

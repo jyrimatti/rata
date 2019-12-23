@@ -3,6 +3,7 @@ import '../platformAssets/runtime/fontManager';
 require('./register_rn');
 require('./register_components');
 require('./register_addons');
+require('./register_icons');
 
 window.getCircularReplacer = () => {
     seen = new WeakSet();

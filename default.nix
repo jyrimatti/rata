@@ -42,7 +42,7 @@ let
               #else haskellPackages.ghcjs-base-stub;
               else haskellPackages.callPackage ghcjs-base-stub-forked {};
 
-  myproject = { mkDerivation, base, deepseq, ghcjs-base, react-hs, react-native-hs, stdenv, nodejs, z3, text, time, transformers, containers, network-uri, ghcjs-fetch, geojson, bytestring, generic-data, lens }:
+  myproject = { mkDerivation, base, deepseq, ghcjs-base, react-hs, react-native-hs, stdenv, nodejs, z3, text, time, transformers, containers, network-uri, ghcjs-fetch, geojson, bytestring, generic-data, lens, regex-tdfa, regex-tdfa-text }:
       mkDerivation {
         pname = "myproject";
         version = "0.1.0.0";
@@ -50,7 +50,7 @@ let
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
-          base deepseq ghcjs-base react-hs react-native-hs text time transformers containers network-uri ghcjs-fetch geojson bytestring generic-data lens
+          base deepseq ghcjs-base react-hs react-native-hs text time transformers containers network-uri ghcjs-fetch geojson bytestring generic-data lens regex-tdfa regex-tdfa-text
         ];
         buildDepends = [pkgs.haskellPackages.cabal-install];
         license = stdenv.lib.licenses.mit;
