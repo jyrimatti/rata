@@ -8,18 +8,13 @@
 
 module Maps.Polygon
   ( module Maps.Polygon
-  , CommonProps.coordinates
-  , CommonProps.strokeWidth
-  , CommonProps.strokeColor
-  , CommonProps.fillColor
-  , CommonProps.tappable
-  , CommonProps.onPress
-  , LatLng(..)
+  , module Maps.CommonProps
+  , module Maps.Types
   )
 where
 
-import Maps.CommonProps as CommonProps
-import Maps.Types
+import Maps.CommonProps (coordinates, strokeColor, Color(..), strokeColor, fillColor, tappable, onPress)
+import Maps.Types (LatLng(..))
 import Prelude                        ( fmap
                                                 , (.)
                                                 , mempty

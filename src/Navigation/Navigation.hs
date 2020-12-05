@@ -12,7 +12,7 @@ module Navigation.Navigation (
       module Navigation.Navigation
     , module Navigation.Types
     , module Navigation.BottomTabNavigatorNavigationOptions
-    , CommonProps.style, CommonProps.ref
+    , module React.Flux.Rn.Props.CommonProps
     
 ) where
 
@@ -51,9 +51,7 @@ import           React.Flux       hiding (on)
 import           React.Flux.Internal
 import           React.Flux.Rn.Events       (fromJSON, fromNativeJSON, This, invoke)
 import           React.Flux.Rn.Properties
-import           React.Flux.Rn.Props.CommonProps as CommonProps
-                                                ( style, ref )
-import           React.Flux.Rn.Types            ( str)
+import           React.Flux.Rn.Props.CommonProps ( style, ref )
 import           React.Flux.Rn.Util
 import           React.Flux.View
 import           Unsafe.Coerce

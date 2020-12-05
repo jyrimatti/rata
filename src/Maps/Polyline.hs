@@ -8,17 +8,11 @@
 
 module Maps.Polyline
   ( module Maps.Polyline
-  , CommonProps.coordinates
-  , CommonProps.strokeWidth
-  , CommonProps.strokeColor
-  , CommonProps.tappable
-  , CommonProps.onPress
-  , LatLng(..)
-  , Color(..)
+  , module Maps.CommonProps
   )
 where
 
-import Maps.CommonProps as CommonProps
+import Maps.CommonProps (strokeWidth, Color(..), strokeColor, tappable, onPress)
 import Prelude                        ( fmap
                                                 , (.)
                                                 , mempty
@@ -31,7 +25,6 @@ import React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , props
                                                 )
-import React.Flux.Rn.Types (Color(..))
 
 data Polyline
 polyline :: [Props Polyline handler] -> ReactElementM handler ()

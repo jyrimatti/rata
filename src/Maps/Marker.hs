@@ -8,27 +8,27 @@
 
 module Maps.Marker
   ( module Maps.Marker
-  , Maps.CommonProps.onPress
-  , LatLng(..)
+  , module Maps.CommonProps
+  , module Maps.Types
   )
 where
 
-import           Prelude                        ( Double
+import Maps.CommonProps (onPress)
+import Maps.Types (LatLng(..))
+import Prelude                        ( Double
                                                 , fmap
                                                 , (.)
                                                 , mempty
                                                 , ($)
                                                 )
-import           React.Flux                     ( foreign_
+import React.Flux                     ( foreign_
                                                 , ReactElementM
                                                 )
-import           React.Flux.Rn.Properties       ( Has
+import React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop
                                                 , props
                                                 )
-import           Maps.Types
-import Maps.CommonProps
 
 data Marker
 marker :: [Props Marker handler] -> ReactElementM handler a -> ReactElementM handler a

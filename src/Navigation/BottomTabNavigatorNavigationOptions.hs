@@ -8,22 +8,28 @@
 {-# LANGUAGE NoImplicitPrelude                #-}
 {-# LANGUAGE OverloadedStrings                #-}
 {-# LANGUAGE RankNTypes                       #-}
-module Navigation.BottomTabNavigatorNavigationOptions where
+module Navigation.BottomTabNavigatorNavigationOptions (
+    module Navigation.BottomTabNavigatorNavigationOptions
+) where
 
+import           Control.Applicative ((<$>),(<*>))
 import           Control.Monad
 import           Data.Aeson (FromJSON, ToJSON, toJSON, Object)
+import           Data.Coerce
 import           Data.Foldable (traverse_)
 import           Data.Function
-import           Data.Map (Map,toList)
-import           Data.Maybe
-import           GHC.Generics                   ( Generic )
-import           GHCJS.Marshal                  
-import           GHCJS.Marshal.Pure                    
-import           GHCJS.Types
 import qualified Data.JSString as JSString
-import Debug.Trace (trace)
-import Control.Applicative ((<$>),(<*>))
+import           Data.Map (Map,toList)                  
+import           Data.Maybe                    
+import           Debug.Trace (trace)
+import           GHC.Generics                   ( Generic )
+import           GHCJS.Foreign.Callback
+import           GHCJS.Foreign.Callback.Internal
+import           GHCJS.Marshal
+import           GHCJS.Marshal.Pure
+import           GHCJS.Types                     
 import qualified JavaScript.Object.Internal as JSO
+import           Navigation.Types
 import           Numeric.Natural
 import           Prelude                        ( String
                                                 , Int
@@ -38,20 +44,16 @@ import           Prelude                        ( String
                                                 , Show(..)
                                                 , Either(..)
                                                 , mempty
-                                                )                     
+                                                )
 import           React.Flux       hiding (on)
 import           React.Flux.Internal
-import React.Flux.Rn.Events       (fromJSON, fromNativeJSON, This, invoke)
+import           React.Flux.Rn.Events       (fromJSON, fromNativeJSON, This, invoke)
 import           React.Flux.Rn.Properties
 import           React.Flux.Rn.Props.CommonProps as CommonProps
                                                 ( style, ref )
 import           React.Flux.Rn.Types            ( str)
+import           React.Flux.Rn.Util (js_invoke1_)
 import           React.Flux.View
-import React.Flux.Rn.Util (js_invoke1_)
-import GHCJS.Foreign.Callback
-import GHCJS.Foreign.Callback.Internal
-import Navigation.Types
-import Data.Coerce
 
 data BottomTabNavigatorNavigationOptions = BottomTabNavigatorNavigationOptions {
     tabBarOnPress :: TabBarOnPress -> ViewEventHandler

@@ -6,71 +6,45 @@
 {-# LANGUAGE OverloadedStrings     #-}
 module Icons.IconButton (
     module Icons.IconButton,
+    module React.Flux.Rn.Props.TouchableWithoutFeedbackProps,
+    module React.Flux.Rn.StyleProps.TextStyleProps,
+    module React.Flux.Rn.StyleProps.ViewStyleProps,
+    module React.Flux.Rn.StyleProps.LayoutStyleProps,
+    module React.Flux.Rn.StyleProps.ShadowStyleProps,
+    module React.Flux.Rn.StyleProps.TransformsStyleProps,
+    module React.Flux.Rn.Props.CommonProps,
     module React.Flux.Rn.Components.Text,
     module React.Flux.Rn.Components.TouchableHighlight,
-    module React.Flux.Rn.Components.TouchableWithoutFeedback,
-    module TextStyleProps,
-    module ViewStyleProps,
-    module LayoutStyleProps,
-    module ShadowStyleProps,
-    module TransformsStyleProps,
-    Color(..), KeyboardType(..),
-    OnContentSizeChange(OnContentSizeChange), DataDetectorTypes(..), KeyboardAppearance(..), OnKeyPress(OnKeyPress), DocumentSelectionState,
-    ReturnKeyType(..), Selection(Selection), TextBreakStrategy(..), ClearButtonMode(..), OnScroll(OnScroll), OnSelectionChange(OnSelectionChange), AutoCapitalize(..),
-    ViewProps.AccessibilityComponentTypes(..),
-    ViewProps.AccessibilityLiveRegion(..),
-    ViewProps.AccessibilityTraits(..),
-    ViewProps.ImportantForAccessibility(..),
-    ViewProps.Inset(Inset),
-    ViewProps.OnLayout(OnLayout),
-    ViewProps.PointerEvents(..),
-    ViewProps.SyntheticTouchEvent(SyntheticTouchEvent),
-    CommonProps.selectionColor,
-    CommonProps.style
+    module React.Flux.Rn.Components.TouchableWithoutFeedback
 ) where
 
-import           Numeric.Natural
-import           Prelude                        ( fmap
+import Numeric.Natural
+import Prelude                        ( fmap
                                                 , (.)
                                                 , mempty
                                                 , ($)
                                                 , String
                                                 )
-import           React.Flux                     ( foreign_
+import React.Flux                     ( foreign_
                                                 , ReactElementM
                                                 )
-import           React.Flux.Rn.Properties       ( Has
+import React.Flux.Rn.Components.Text
+import React.Flux.Rn.Components.TouchableHighlight
+import React.Flux.Rn.Components.TouchableWithoutFeedback
+import React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop
                                                 , props
                                                 , Styles
                                                 , nestedProp
                                                 )
-import qualified React.Flux.Rn.Props.CommonProps as CommonProps
-import qualified React.Flux.Rn.Props.ViewProps   as ViewProps
-import React.Flux.Rn.Components.Text
-import React.Flux.Rn.Components.TouchableWithoutFeedback
-import React.Flux.Rn.Components.TouchableHighlight
-import           React.Flux.Rn.StyleProps.LayoutStyleProps as LayoutStyleProps
-import           React.Flux.Rn.StyleProps.ShadowStyleProps as ShadowStyleProps
-import           React.Flux.Rn.StyleProps.TextStyleProps as TextStyleProps
-import           React.Flux.Rn.StyleProps.TransformsStyleProps as TransformsStyleProps
-import           React.Flux.Rn.StyleProps.ViewStyleProps as ViewStyleProps hiding (borderBottomWidth, borderLeftWidth, borderRightWidth, borderTopWidth, borderWidth)
-import           React.Flux.Rn.Types             (AutoCapitalize (..),
-                                                  ClearButtonMode (..),
-                                                  Color (..),
-                                                  DataDetectorTypes (..),
-                                                  DocumentSelectionState,
-                                                  ImageSource (..),
-                                                  KeyboardAppearance (..),
-                                                  KeyboardType (..),
-                                                  OnContentSizeChange (OnContentSizeChange),
-                                                  OnKeyPress (OnKeyPress),
-                                                  OnScroll (OnScroll),
-                                                  OnSelectionChange (OnSelectionChange),
-                                                  ReturnKeyType (..),
-                                                  Selection (Selection),
-                                                  TextBreakStrategy (..))
+import React.Flux.Rn.Props.CommonProps (style, selectionColor, Color(..))
+import React.Flux.Rn.Props.TouchableWithoutFeedbackProps
+import React.Flux.Rn.StyleProps.LayoutStyleProps
+import React.Flux.Rn.StyleProps.ShadowStyleProps
+import React.Flux.Rn.StyleProps.TextStyleProps
+import React.Flux.Rn.StyleProps.TransformsStyleProps
+import React.Flux.Rn.StyleProps.ViewStyleProps hiding (borderBottomWidth, borderLeftWidth, borderRightWidth, borderTopWidth, borderWidth)
 
 data IconButton
 

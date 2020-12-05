@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE CPP                              #-}
 {-# LANGUAGE DataKinds                        #-}
 {-# LANGUAGE DeriveGeneric                    #-}
@@ -10,9 +9,10 @@
 {-# LANGUAGE NoImplicitPrelude                #-}
 {-# LANGUAGE OverloadedStrings                #-}
 {-# LANGUAGE RankNTypes                       #-}
+{-# LANGUAGE ScopedTypeVariables              #-}
 module Navigation.DrawerNavigator (
       module Navigation.DrawerNavigator
-    , CommonProps.style, CommonProps.ref
+    , module React.Flux.Rn.Props.CommonProps
     
 ) where
 
@@ -52,8 +52,7 @@ import           React.Flux (executeAction)
 import           React.Flux.Internal
 import           React.Flux.Rn.Events       (fromJSON, fromNativeJSON, This, invoke)
 import           React.Flux.Rn.Properties
-import           React.Flux.Rn.Props.CommonProps as CommonProps
-                                                ( style, ref )
+import           React.Flux.Rn.Props.CommonProps ( style, ref )
 import           React.Flux.Rn.Types            ( str)
 import           React.Flux.View
 import           Unsafe.Coerce

@@ -2,13 +2,10 @@
 {-# LANGUAGE DeriveAnyClass               #-}
 {-# LANGUAGE DeriveGeneric                #-}
 {-# LANGUAGE DuplicateRecordFields        #-}
-{-# LANGUAGE NoImplicitPrelude            #-}
-{-# LANGUAGE OverloadedStrings            #-}
 {-# LANGUAGE PolyKinds                    #-}
 {-# LANGUAGE RankNTypes                   #-}
 module Maps.Types (
-  module Maps.Types,
-  Inset
+  module Maps.Types
 ) where
 
 import Control.DeepSeq
@@ -21,7 +18,6 @@ import Prelude                    (Bool, Double, Int, Maybe (..), Eq,
                                              Show, String,
                                              (.))
 import React.Flux.Rn.Events       (fromJSON, fromNativeJSON)
-import React.Flux.Rn.Types (str,Inset)
 
 {-# ANN module ("HLint: ignore Use camelCase" :: String) #-}
 
@@ -88,19 +84,19 @@ instance ToJSVal Frame where toJSVal = toJSVal . toJSON
 data MapType = Standard | Satellite | Hybrid | Terrain | None | MutedStandard
   deriving (Show, Generic)
 instance ToJSVal MapType where
-    toJSVal Standard  = str "standard"
-    toJSVal Satellite = str "satellite"
-    toJSVal Hybrid    = str "hybrid"
-    toJSVal Terrain   = str "terrain"
-    toJSVal None      = str "none"
-    toJSVal MutedStandard = str "mutedStandard"
+    toJSVal Standard      = toJSVal "standard"
+    toJSVal Satellite     = toJSVal "satellite"
+    toJSVal Hybrid        = toJSVal "hybrid"
+    toJSVal Terrain       = toJSVal "terrain"
+    toJSVal None          = toJSVal "none"
+    toJSVal MutedStandard = toJSVal "mutedStandard"
 
 data PaddingAdjustmentBehavior = Always | Automatic | Never
   deriving (Show, Generic)
 instance ToJSVal PaddingAdjustmentBehavior where
-    toJSVal Always  = str "always"
-    toJSVal Automatic = str "automatic"
-    toJSVal Never    = str "never"
+    toJSVal Always    = toJSVal "always"
+    toJSVal Automatic = toJSVal "automatic"
+    toJSVal Never     = toJSVal "never"
 
 data KmlMarker = KmlMarker {
   id :: String,

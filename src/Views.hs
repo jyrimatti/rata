@@ -1,4 +1,3 @@
-{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts          #-}
@@ -8,6 +7,7 @@
 {-# LANGUAGE NamedFieldPuns            #-}
 {-# LANGUAGE NoImplicitPrelude         #-}
 {-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE PartialTypeSignatures     #-}
 {-# LANGUAGE PolyKinds                 #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
 {-# LANGUAGE StandaloneDeriving        #-}
@@ -81,8 +81,6 @@ import           React.Flux.Rn.Components.View as View
 import           React.Flux.Rn.Events (This(..))
 
 import           React.Flux.Rn.Properties (Props)
-import           React.Flux.Rn.Props.CommonProps
-                                                ( style )
 import           React.Flux.Rn.Util (log)
 import           React.Flux.Rn.Views
 import           Store
@@ -101,15 +99,15 @@ app cms useDiagram =
                       StoreField AppState "zoomLevel" Natural,
                       StoreField AppState "viewport" Region
                      ] "Rata" $ \layerStates layerDataMap layerDataDiagram zoomLevel viewport () ->
-        view [ style [ height (Perc 100)
+        view [ style [ View.height (Perc 100)
                      , flex 1
                      , flexDirection Row]]
           $ 
               view [ style [ position Absolute
-                           , left 0
-                           , right 0
-                           , top 0
-                           , bottom 0
+                           , View.left 0
+                           , View.right 0
+                           , View.top 0
+                           , View.bottom 0
                            , backgroundColor $ Rgb 0 0 0 ]] $ do
                 mapWrapper cms useDiagram (zoomLevel, viewport, layerStates, if useDiagram  then layerDataDiagram else layerDataMap)
                 view [ style [ marginTop (Pt 20) ] ] $ 
@@ -184,21 +182,21 @@ calloutContent oid properties = traverse_ (elemString . getOid) oid
 mkMarker :: Layer -> Maybe Oid -> FeatureProperties -> LatLng -> ReactElementM _ ()
 mkMarker layer oid properties c =
   marker ([ coordinate c ] <> tap oid) $ do
-    layerIcon c layer properties
+    layerIcon c properties
     callout [] $ mkCallout oid properties
 
 mkPolyline :: Layer -> Maybe Oid -> FeatureProperties -> GeoLine -> ReactElementM _ ()
 mkPolyline layer oid properties geom = polyline $
     [ tappable True
     , (coordinates . fmap (toLatLng . retrieveXY) . fromLineString . _unGeoLine) geom
-    ] <> lineStyle layer properties
+    ] <> lineStyle properties
       <> tap oid
 
 mkPolygon :: Layer -> Maybe Oid -> FeatureProperties -> GeoPolygon -> ReactElementM _ ()
 mkPolygon layer oid properties geom = polygon $
     [ tappable True
     , (coordinates . fmap (toLatLng . retrieveXY) . concatMap fromLinearRing . _unGeoPolygon) geom
-    ] <> polygonStyle layer properties
+    ] <> polygonStyle properties
       <> tap oid
 
 renderGeometry :: Layer -> Maybe Oid -> FeatureProperties -> GeospatialGeometry -> ReactElementM _ ()

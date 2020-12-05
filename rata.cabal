@@ -55,4 +55,4 @@ executable rata
   default-language:    Haskell2010
   ghc-options: -W
   cpp-options: -DGHCJS_BROWSER
-
+  extensions: NoImplicitPrelude

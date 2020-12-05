@@ -9,6 +9,7 @@ import Data.List (intercalate)
 import GHC.Generics
 import Maps.Types (LatLng(..),Region(..))
 import Numeric.Natural
+import Prelude (Double, Show, Eq, Maybe(..), Bool, ($), fmap, show, (-), (/), (+), (<$>), filter, (<=), (&&), (>))
 
 data BBox = BBox {
     x1 :: Double,

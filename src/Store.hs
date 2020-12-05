@@ -37,6 +37,7 @@ import           Navigation.Navigation
 import           Numeric.Natural
 import           Prelude                        ((/=),  Show
                                                 , Eq
+                                                , (<$>)
                                                 , Bool(..)
                                                 , pure
                                                 , (||)
@@ -63,6 +64,10 @@ import           React.Flux                     ( StoreData(..), action, SomeSto
 import           React.Flux.Rn.Events            (This(..))
 import           React.Flux.Rn.Util             ( log, logJSVal )
 import           Transform
+import Maps.MapView (MapView)
+import Infra (Infra(..))
+import InfraData (InfraProperties(..))
+import Data.Bifunctor (second)
 
 hasVectorData :: AppState -> Bool -> Layer -> Bool
 hasVectorData st diagram layer = Map.member layer (if diagram then layerDataDiagram st else layerDataMap st)
@@ -138,13 +143,24 @@ fetchVectorLayer maptype tile layer = let
         log . pack $ "Fetching vector data from: " <> url
         resp <- fetch (Request (pack url) defaultRequestOptions)
         json <- responseJSON resp
-        executeAction $ case parseEither A.parseJSON json of
-            Left msg                                -> disp $ VectorFetchFailed layer (T.pack url) (T.pack msg)
-            Right (GeoFeatureCollection _ features) -> disp $ VectorFetchSucceeded maptype layer tile features
+        executeAction $ case foo (infraLayerType $ layerType layer) json of
+            Left msg       -> disp $ VectorFetchFailed layer (T.pack url) (T.pack msg)
+            Right features -> disp $ VectorFetchSucceeded maptype layer tile features
   in do
     _ <- forkIO $ catch doFetch $ \(JSPromiseException e) -> do
         logJSVal (pack $ "Got an exception while fetching url " <> url <> ": ") e
     return ()
+
+foo :: Infra -> A.Value -> Either String (Seq (GeoFeature FeatureProperties))
+foo Switches = bar SwitchesF
+foo Balises = bar BalisesF
+
+bar x = mapRight (InfraProps . x) <$> parseEither A.parseJSON
+
+mapRight f (Left s)                                  = Left s
+mapRight f (Right (GeoFeatureCollection _ features)) = Right $ fmap (mapFeature f) features
+
+mapFeature f (GeoFeature a b c d) = GeoFeature a b (f c) d
 
 initialReg :: Region        
 initialReg = Region 61.4858254 24.0470175 (Just 0.5) (Just 0.5)

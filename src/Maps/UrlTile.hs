@@ -14,6 +14,7 @@ import Numeric.Natural
 import Prelude    (String,fmap,(.),mempty,($),Bool,Int)
 import React.Flux                      (ReactElementM, foreign_)
 import React.Flux.Rn.Properties        (Has, Props, prop, props)
+import React.Flux.Rn.Types ()
 
 data UrlTile
 urlTile :: [Props UrlTile handler] -> ReactElementM handler ()

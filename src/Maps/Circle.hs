@@ -8,30 +8,27 @@
 
 module Maps.Circle
   ( module Maps.Circle
-  , LatLng(..)
-  , Color(..)
-  , CommonProps.strokeWidth
-  , CommonProps.strokeColor
-  , CommonProps.fillColor
-  )
-where
+  , module Maps.CommonProps
+  , module React.Flux.Rn.Types.Color
+  ) where
+
+import Maps.CommonProps (strokeWidth, strokeColor, fillColor)
+import Maps.Types
 import Numeric.Natural
-import           Prelude                        (fmap
+import Prelude                        (fmap
                                                 , (.)
                                                 , mempty
                                                 , ($)
                                                 )
-import           React.Flux                     ( foreign_
+import React.Flux                     ( foreign_
                                                 , ReactElementM
                                                 )
-import           React.Flux.Rn.Properties       ( Has
+import React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop
                                                 , props
                                                 )
-import           React.Flux.Rn.Types (Color(..))
-import           Maps.Types
-import           Maps.CommonProps as CommonProps
+import React.Flux.Rn.Types.Color
 
 data Circle
 circle :: [Props Circle handler] -> ReactElementM handler ()

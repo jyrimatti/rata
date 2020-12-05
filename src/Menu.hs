@@ -23,23 +23,24 @@ import           LayerTypes
 
 import           Prelude                             (mapM_, ($), (<), (>),
                                                       (||))
-import           React.Flux.Rn.Components.Button
-import           React.Flux.Rn.Components.TouchableHighlight as TH
-import           React.Flux.Rn.Components.Text as Text
-
-import           React.Flux.Rn.Components.ScrollView
-import           React.Flux.Rn.Components.View
-import           React.Flux.Rn.Views
-import           Store
 import           React.Flux                                        (elemShow,
                                                                     elemString)
+import           React.Flux.Rn.Components.Button
+import           React.Flux.Rn.Components.ScrollView
+
+import           React.Flux.Rn.Components.Text as Text
+import           React.Flux.Rn.Components.TouchableHighlight as TH
+import           React.Flux.Rn.Components.View as V
+import           React.Flux.Rn.Types.AlignContent as AC
+import           React.Flux.Rn.Views
+import           Store
 
 menu = mkControllerView @'[StoreArg AppState] "menu" $ \state () ->
     scrollView [ style [ marginTop (Pt 20) ] ] $
         mapM_ (\layer -> layerButton (zoomLevel state, layer, (layerStates state) Map.! layer)) allLayers
 
 layerButton = mkView "layerButton" $ \(zoomLevel, layer, state) ->
-    view [style [ alignContent FlexStart ]] $
+    view [style [ alignContent AC.FlexStart ]] $
         touchableHighlight [ TH.onPress (dispatch $ ChangeLayerState layer)
                            , TH.disabled $ disabledForLayer zoomLevel layer
                                 ] $

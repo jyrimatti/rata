@@ -15,6 +15,8 @@ import Numeric.Natural
 import Prelude (($), String, Show(..), Maybe(..), Eq, Ord, Bool(..), (.), (<>), (==), (>), (<), (>=), fmap)
 import Transform
 import Infra
+import InfraStyles
+import InfraData
 import Maps.Polyline (Polyline)
 import Maps.Polygon (Polygon)
 import           React.Flux.Rn.Views (ReactElementM)
@@ -24,31 +26,31 @@ import Maps.Types (LatLng)
 data Layer = Layer {
     layerType :: LayerType,
     visibility :: Visibility
-} deriving (Typeable, Generic, NFData, Eq, Ord)
+} deriving (Typeable, Eq, NFData, Generic, Ord)
 
 instance Show Layer where
   show = show . layerType
 
-data FeatureProperties = InfraProps InfraProperties
-  deriving (FromJSON, Show, Typeable, Generic, NFData, Eq)
+newtype FeatureProperties = InfraProps InfraProperties
+  deriving (Show, Eq, NFData, Generic)
 
-data LayerType = InfraLayer Infra
-  deriving (Show, Typeable, Generic, NFData, Eq, Ord)
+newtype LayerType = InfraLayer { infraLayerType :: Infra }
+  deriving (Show, Eq, NFData, Generic, Ord)
 
 layerPath :: Layer -> LayerSource
 layerPath Layer{layerType = InfraLayer layer} = Infra.layerPath layer
 
 toOid :: FeatureProperties -> Maybe Oid
-toOid (InfraProps props) = Infra.toOid props
+toOid (InfraProps props) = InfraData.toOid props
 
-layerIcon :: LatLng -> Layer -> FeatureProperties -> ReactElementM handler ()
-layerIcon coordinate Layer{layerType = InfraLayer layer} (InfraProps props) = Infra.layerIcon coordinate layer props
+layerIcon :: LatLng -> FeatureProperties -> ReactElementM handler ()
+layerIcon coordinate (InfraProps props) = InfraStyles.layerIcon coordinate props
 
-lineStyle :: Layer -> FeatureProperties -> [Props Polyline handler]
-lineStyle Layer{layerType = InfraLayer layer} (InfraProps props) = Infra.lineStyle layer props
+lineStyle :: FeatureProperties -> [Props Polyline handler]
+lineStyle (InfraProps props) = InfraStyles.lineStyle props
 
-polygonStyle :: Layer -> FeatureProperties -> [Props Polygon handler]
-polygonStyle Layer{layerType = InfraLayer layer} (InfraProps props) = Infra.polygonStyle layer props
+polygonStyle :: FeatureProperties -> [Props Polygon handler]
+polygonStyle (InfraProps props) = InfraStyles.polygonStyle props
 
 layerBase :: Layer -> String
 layerBase Layer{layerType = InfraLayer _} = Infra.apiBase

@@ -108,13 +108,13 @@ let
        license = stdenv.lib.licenses.mit;
      };
 
-  react-native-hs-local = { mkDerivation, base, deepseq, ghcjs-base, react-hs, stdenv, nodejs, text, time, transformers, containers, network-uri }:
+  react-native-hs-local = { mkDerivation, base, deepseq, ghcjs-base, react-hs, stdenv, nodejs, text, time, transformers, containers, network-uri, semigroups, aeson }:
      mkDerivation {
        pname = "react-native-hs";
        version = "0.1.1";
        src = ../react-native-hs/.;
        libraryHaskellDepends = [
-         react-hs text time transformers containers network-uri
+         react-hs text time transformers containers network-uri semigroups aeson
        ];
        homepage = "https://github.com/jyrimatti/react-native-hs";
        description = "React-native support for react-hs";

@@ -34,7 +34,6 @@ import           React.Flux.Rn.Views
 import React.Flux.Rn.StyleProps.LayoutStyleProps as LayoutStyleProps
 import React.Flux.Rn.StyleProps.TransformsStyleProps as TransformsStyleProps
 import React.Flux.Rn.Props.CommonProps as CommonProps
-import React.Flux.Rn.Types(Transform(..), Angle(..))
 import React.Flux.Rn.Util (js_lookupWindow)
 
 {-# ANN module ("HLint: ignore Use camelCase" :: String) #-}

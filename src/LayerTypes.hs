@@ -14,6 +14,7 @@ import           Data.Typeable
 import           GHC.Generics                   ( Generic )
 import Data.Geospatial
 import Numeric.Natural
+import Prelude (Maybe(..), Eq, Ord, Show, String, Bool(..))
 
 
 data LayerSource = LayerSource {
@@ -32,7 +33,10 @@ data LayerState = LayerHidden | LayerShown
   deriving (Show, Typeable, Generic, NFData, Eq)
 
 data Oid = Oid { getOid :: String }
-  deriving (FromJSON, Show, Typeable, Generic, NFData, Eq, Ord)
+  deriving (Show, Typeable, Generic, NFData, Eq, Ord)
+
+instance FromJSON Oid where
+  parseJSON = genericParseJSON defaultOptions { unwrapUnaryRecords = True }
 
 data Feature props = Feature (Maybe Oid) props GeospatialGeometry
   deriving (Show, Typeable, Generic, NFData, Eq)

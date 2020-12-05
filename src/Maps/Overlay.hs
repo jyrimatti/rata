@@ -8,30 +8,30 @@
 
 module Maps.Overlay
   ( module Maps.Overlay
-  , LatLng(..)
-  , ImageSource
+  , moduel Maps.Types
+  , module React.Flux.Rn.Types.ImageSource
   )
 where
 
-import           Prelude                        ( Double
+import Maps.Types (LatLng(..))
+import Prelude                        ( Double
                                                 , fmap
                                                 , (.)
                                                 , mempty
                                                 , Bool
                                                 , ($)
                                                 )
-import           React.Flux                     ( foreign_
+import React.Flux                     ( foreign_
                                                 , ReactElementM
                                                 , EventHandlerType
                                                 )
-import           React.Flux.Rn.Properties       ( Has
+import React.Flux.Rn.Events
+import React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop
                                                 , props
                                                 )
-import           Maps.Types
-import           React.Flux.Rn.Events
-import React.Flux.Rn.Types (ImageSource)
+import React.Flux.Rn.Types.ImageSource
 
 data Overlay
 overlay :: [Props Overlay handler] -> ReactElementM handler a -> ReactElementM handler a

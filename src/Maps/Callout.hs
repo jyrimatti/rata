@@ -27,6 +27,7 @@ import React.Flux.Rn.Properties       ( Has
                                                 , prop
                                                 , props
                                                 )
+import React.Flux.Rn.Types ()
 
 data Callout
 callout :: [Props Callout handler] -> ReactElementM handler a -> ReactElementM handler a

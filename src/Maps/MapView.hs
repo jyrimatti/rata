@@ -8,51 +8,43 @@
 {-# LANGUAGE RankNTypes            #-}
 module Maps.MapView
   ( module Maps.MapView
-  , CommonProps.style, CommonProps.ref
-  , Region(..)
-  , Camera(Camera)
-  , Inset(Inset)
-  , PaddingAdjustmentBehavior(..)
-  , MapType(..)
-  , Color(..)
-  , Point(..)
+  , module React.Flux.Rn.Props.CommonProps
+  , module LayoutStyleProps
+  , module React.Flux.Rn.Types.Color
+  , module Maps.Types
   )
 where
 
-import           Data.Maybe (fromJust)
+import Data.Maybe (fromJust)
 
-import           GHCJS.Marshal                  ( ToJSVal(..)
+import GHCJS.Marshal                  ( ToJSVal(..)
                                                 )
-import           GHCJS.Types                    ( JSVal
+import GHCJS.Types                    ( JSVal
                                                 )
-import           Maps.Types                     ( Region(..)
+import Maps.Types                     ( Region(..)
                                                 , Camera(..)
                                                 , LatLng(..)
                                                 , Point(..)
                                                 , MapType(..)
-                                                , Inset
                                                 , PaddingAdjustmentBehavior(..)
                                                 )
-import           Numeric.Natural
-import           Prelude                        (String
+import Numeric.Natural
+import Prelude                        (String
                                                 , IO
                                                 , fmap
                                                 , (.)
                                                 , Bool)
-import           React.Flux hiding (style)
-import           React.Flux.Rn.Events     (EventHandlerType, invoke1, This(..), on1, on0)
-import           React.Flux.Rn.Properties       ( Has
+import React.Flux hiding (style)
+import React.Flux.Rn.Events     (EventHandlerType, invoke1, This(..), on1, on0)
+import React.Flux.Rn.Properties       ( Has
                                                 , Props
                                                 , prop
                                                 , props
                                                 )
-import           React.Flux.Rn.Props.CommonProps as CommonProps
-                                                ( style, ref )
-import qualified React.Flux.Rn.StyleProps.LayoutStyleProps
-                                               as LayoutStyleProps
-import           React.Flux.Rn.Types            ( Color(..)
-                                                , Inset(..)
-                                                )
+import React.Flux.Rn.Props.CommonProps ( style, ref )
+import React.Flux.Rn.StyleProps.LayoutStyleProps as LayoutStyleProps hiding (None)
+import React.Flux.Rn.Types.Color
+import React.Flux.Rn.Types.Inset
 
 data MapView
 
